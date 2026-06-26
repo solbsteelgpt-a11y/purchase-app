@@ -1,5 +1,5 @@
-const STATUS=["Waiting Procurement","Waiting Quotations","Waiting VES","Waiting PO","Waiting Delivery","Waiting GRN","Completed","Delayed"];
-const PROG={"Waiting Procurement":15,"Waiting Quotations":30,"Waiting VES":50,"Waiting PO":65,"Waiting Delivery":80,"Waiting GRN":92,"Completed":100,"Delayed":55};
+const STATUS=["Waiting Procurement","Waiting Quotations","Waiting VES","Waiting PO","Waiting Payment","Waiting Delivery","Waiting GRN","Completed","Delayed"];
+const PROG={"Waiting Procurement":15,"Waiting Quotations":30,"Waiting VES":50,"Waiting PO":65,"Waiting Payment":72,"Waiting Delivery":82,"Waiting GRN":92,"Completed":100,"Delayed":55};
 const COLORS=["#c9002b","#f28c00","#f4b03d","#0b65a3","#23a0b5","#16a34a","#111827","#8f969b"];
 const KEY="SOMS_SOLB_UPDATED_V1";
 let activeCase=null;
@@ -43,6 +43,7 @@ function bar(c){return `<div class="progress"><div style="width:${progress(c)}%"
 document.addEventListener("DOMContentLoaded",()=>{
  STATUS.forEach(s=>{statusFilter.innerHTML+=`<option>${s}</option>`; cStatus.innerHTML+=`<option>${s}</option>`; tType.innerHTML+=`<option>${s}</option>`});
  document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+ cItem.addEventListener("change", handleNewItemFromCase);
  fillItems(); render();
 });
 
@@ -57,7 +58,34 @@ function showPage(id){
 
 function fillItems(){
  const opts=data.items.map(i=>`<option value="${i.id}">${i.code} - ${i.desc}</option>`).join("");
- cItem.innerHTML=opts; mItem.innerHTML=opts;
+ const addNewOpt = `<option value="__new_item__">➕ Add New Item...</option>`;
+ cItem.innerHTML = opts + addNewOpt;
+ mItem.innerHTML = opts;
+}
+
+
+function handleNewItemFromCase(){
+ if(cItem.value !== "__new_item__") return;
+
+ const code = prompt("Enter new item code:");
+ if(!code){
+   cItem.value = data.items[0]?.id || "";
+   return;
+ }
+
+ const desc = prompt("Enter item description:") || code;
+ const cat = prompt("Enter category:", "Spare Parts") || "Spare Parts";
+ const unit = prompt("Enter unit:", "pcs") || "pcs";
+ const stock = Number(prompt("Enter current stock:", "0") || 0);
+ const min = Number(prompt("Enter minimum stock:", "0") || 0);
+ const reorder = Number(prompt("Enter reorder point:", String(min || 0)) || min || 0);
+
+ const newItem = {id:id(), code, desc, cat, unit, stock, min, reorder};
+ data.items.push(newItem);
+ save();
+ fillItems();
+ cItem.value = newItem.id;
+ render();
 }
 
 function render(){
@@ -123,6 +151,12 @@ function openCase(idv=null){
 }
 
 function saveCase(){
+
+ if(cItem.value === "__new_item__"){
+   handleNewItemFromCase();
+   if(cItem.value === "__new_item__") return;
+ }
+
  const idv=cId.value||id(); let c=data.cases.find(x=>x.id===idv);
  const obj={id:idv,pr:cPr.value,po:cPo.value,item:cItem.value,type:cType.value,status:cStatus.value,priority:cPriority.value,supplier:cSupplier.value,owner:cOwner.value,qty:+cQty.value||0,due:cDue.value,next:cNext.value,desc:cDesc.value,timeline:c?.timeline||[],docs:c?.docs||[]};
  if(!c){obj.timeline.push({date:datetime(),type:"Waiting Procurement",person:cOwner.value||"Mohammad",comment:"Case created."});data.cases.push(obj)}else Object.assign(c,obj);

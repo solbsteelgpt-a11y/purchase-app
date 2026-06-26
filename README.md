@@ -1,15 +1,13 @@
-# SOMS - SOLB STEEL Theme V4.3
+# SOMS - SOLB STEEL Theme V4.4
 
-## V4.3 Fixes
-- Hard fixed dashboard chart overlap.
-- Purchase Cases by Status now occupies full row.
-- Donut chart and legend are separated with safe spacing.
-- Dashboard panels use controlled 12-column layout.
-- Fully responsive behavior for medium and small screens.
-- Keeps V4.2 PDF print page-break fixes.
+## V4.4 Updates
+- Added new purchase status: Waiting Payment.
+- In New Purchase Case, Item list now includes: ➕ Add New Item...
+- New item can be created directly while creating a purchase case.
+- Keeps previous V4.3 chart overlap fix and V4.2 PDF print fixes.
 
 ## Upload to GitHub Pages
-Upload all files to your repository root:
+Upload all files to the repository root:
 - index.html
 - css/style.css
 - js/app.js
