@@ -1,1 +1,336 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SOMS | Procurement & Inventory</title><link rel="stylesheet" href="css/style.css"></head><body><aside class="sidebar"><div class="brand"><div class="mark">S</div><div><h1>SOMS</h1><p>Solb Operations Management System</p></div></div><nav><button class="active" data-page="home">🏠 Executive Home</button><button data-page="procurement">📦 Procurement</button><button data-page="inventory">🏭 Inventory</button><button data-page="items">📋 Item Master</button><button data-page="suppliers">🤝 Suppliers</button><button data-page="reports">📄 Reports</button><button data-page="modules">🧩 Future Modules</button><button data-page="settings">⚙️ Settings</button></nav><div class="activeModule"><b>Active Module</b><span>Procurement & Inventory</span></div></aside><main><header><div><h2 id="pageTitle">Executive Home</h2><p id="subtitle">Purchase cases, timeline, documents, stock and reports.</p></div><div class="actions"><button id="themeBtn" class="btn ghost">🌙 Theme</button><button id="backupBtn" class="btn soft">Export Backup</button><label class="btn soft">Import Backup<input hidden type="file" id="importFile" accept=".json"></label><button id="newCase" class="btn primary">+ New Case</button></div></header><section id="home" class="page active"><div class="kpis"><div><span>Total Cases</span><b id="kTotal">0</b></div><div><span>Open Cases</span><b id="kOpen">0</b></div><div><span>Delayed</span><b id="kDelayed">0</b></div><div><span>Critical Stock</span><b id="kCritical">0</b></div><div><span>Avg Completion</span><b id="kAvg">0%</b></div></div><div class="grid"><div class="panel"><h3>Purchase Pipeline</h3><div id="pipeline" class="chart"></div></div><div class="panel"><h3>Today's Actions</h3><div id="actionsList"></div></div></div><div class="grid"><div class="panel"><h3>Last Activity</h3><div id="activity"></div></div><div class="panel"><h3>Stock Alerts</h3><div id="alerts"></div></div></div></section><section id="procurement" class="page"><div class="toolbar"><input id="caseSearch" placeholder="Search PR, PO, item, supplier, status..."><select id="statusFilter"></select><button id="kanbanBtn" class="btn soft">Kanban</button><button id="tableBtn" class="btn soft">Table</button></div><div id="kanban" class="kanban"></div><div id="caseTableWrap" class="panel hidden"><table><thead><tr><th>PR</th><th>Item</th><th>Status</th><th>Progress</th><th>Owner</th><th>Supplier</th><th>Due</th><th>Next Action</th><th></th></tr></thead><tbody id="caseTable"></tbody></table></div></section><section id="inventory" class="page"><div class="toolbar"><button id="newMove" class="btn primary">+ Stock Movement</button><input id="moveSearch" placeholder="Search movement..."></div><div class="panel"><table><thead><tr><th>Date</th><th>Item</th><th>Type</th><th>Ref.</th><th>Qty</th><th>Balance After</th><th>Comment</th></tr></thead><tbody id="movesTable"></tbody></table></div></section><section id="items" class="page"><div class="toolbar"><button id="newItem" class="btn primary">+ New Item</button><input id="itemSearch" placeholder="Search material code, description..."></div><div class="panel"><table><thead><tr><th>Code</th><th>Description</th><th>Category</th><th>Warehouse</th><th>Stock</th><th>Min</th><th>Reorder</th><th>Status</th><th></th></tr></thead><tbody id="itemTable"></tbody></table></div></section><section id="suppliers" class="page"><div class="toolbar"><button id="newSupplier" class="btn primary">+ New Supplier</button><input id="supplierSearch" placeholder="Search supplier..."></div><div class="panel"><table><thead><tr><th>Supplier</th><th>Category</th><th>Contact</th><th>Email</th><th>Country</th><th>Rating</th><th>Lead Time</th><th></th></tr></thead><tbody id="supplierTable"></tbody></table></div></section><section id="reports" class="page"><div class="toolbar"><button onclick="window.print()" class="btn primary">Generate PDF</button><button id="csvCases" class="btn soft">Export Cases CSV</button><button id="csvItems" class="btn soft">Export Items CSV</button></div><div class="panel report"><h2>SOMS Procurement & Inventory Report</h2><p id="reportDate"></p><div class="reportKpis"><div>Total Cases<b id="rTotal">0</b></div><div>Open Cases<b id="rOpen">0</b></div><div>Delayed<b id="rDelayed">0</b></div><div>Critical Stock<b id="rCritical">0</b></div></div><h3>Open Cases</h3><table><thead><tr><th>PR</th><th>Item</th><th>Status</th><th>Completion</th><th>Next Action</th><th>Last Update</th></tr></thead><tbody id="reportCases"></tbody></table><h3>Stock Alerts</h3><table><thead><tr><th>Code</th><th>Description</th><th>Stock</th><th>Min</th><th>Status</th></tr></thead><tbody id="reportStock"></tbody></table></div></section><section id="modules" class="page"><div class="panel"><h3>Future Modules Roadmap</h3><div class="modules"><div class="on">📦 Procurement & Inventory<br><small>Active first module</small></div><div>⚙️ Operations<br><small>EAF / LF / CCM KPIs</small></div><div>🔧 Maintenance<br><small>Work orders and PM</small></div><div>💰 CAPEX<br><small>Budget and progress</small></div><div>🧱 Refractory<br><small>Campaign and cost</small></div><div>👥 HR Follow-up<br><small>Vacancies and pipeline</small></div><div>🤖 AI Assistant<br><small>Summaries and alerts</small></div></div></div></section><section id="settings" class="page"><div class="panel"><h3>Storage & Backup</h3><p>This GitHub Pages version stores data locally in the browser. Use Export Backup regularly. Cloud database and real file storage will be added in V3.</p><button id="resetBtn" class="btn danger">Reset Demo Data</button><h3>Configuration</h3><pre id="configView"></pre></div></section></main><div id="toast"></div><div id="caseModal" class="modal"><div class="modalCard wide"><div class="modalHead"><div><h3 id="caseTitle">Purchase Case</h3><p>Details, manual timeline, comments, documents, and cycle view.</p></div><button class="close">✕</button></div><div class="tabs"><button class="tab active" data-tab="details">Details</button><button class="tab" data-tab="timeline">Timeline & Comments</button><button class="tab" data-tab="docs">Documents</button><button class="tab" data-tab="cycle">Cycle View</button></div><div id="details" class="tabPanel active"><form id="caseForm" class="form"><input type="hidden" id="cId"><label>PR No.<input id="cPr" required></label><label>PO No.<input id="cPo"></label><label>Item<select id="cItem"></select></label><label>Type<select id="cType"></select></label><label>Status<select id="cStatus"></select></label><label>Priority<select id="cPriority"></select></label><label>Owner<input id="cOwner"></label><label>Department<input id="cDept" value="SMP"></label><label>Supplier<select id="cSupplier"></select></label><label>Qty<input id="cQty" type="number" step="0.01"></label><label>Value<input id="cValue" type="number" step="0.01"></label><label>Cost Center<input id="cCost" value="SP001"></label><label>PR Date<input id="cPrDate" type="date"></label><label>Due Date<input id="cDue" type="date"></label><label>Next Action<input id="cNext"></label><label>Responsible<input id="cResp"></label><label class="span2">Description<textarea id="cDesc"></textarea></label><div class="span2 right"><button class="btn primary">Save Case</button></div></form></div><div id="timeline" class="tabPanel"><form id="timelineForm" class="form compact"><label>Date<input id="tlDate" type="datetime-local"></label><label>Update Type<select id="tlType"></select></label><label>Person<input id="tlPerson" value="Mohammad"></label><label class="span2">Comment<input id="tlComment"></label><div class="span2 right"><button class="btn soft">+ Add Update</button></div></form><div id="timelineList" class="timeline"></div></div><div id="docs" class="tabPanel"><div class="docTools"><input id="docTitle" placeholder="Document title"><input id="docFile" type="file"><input id="docLink" placeholder="Optional link/path"><button id="addDoc" class="btn soft">+ Add Document Ref.</button></div><p class="muted">Static version saves document names/references only. Permanent upload requires cloud storage in V3.</p><div id="docList" class="docList"></div></div><div id="cycle" class="tabPanel"><div id="cycleView" class="cycle"></div></div></div></div><div id="itemModal" class="modal"><div class="modalCard"><div class="modalHead"><h3>Item Master</h3><button class="close">✕</button></div><form id="itemForm" class="form"><input type="hidden" id="iId"><label>Material Code<input id="iCode" required></label><label>Internal Code<input id="iInternal"></label><label class="span2">Description<input id="iDesc" required></label><label>Category<select id="iCategory"></select></label><label>Warehouse<select id="iWarehouse"></select></label><label>Unit<input id="iUnit" value="pcs"></label><label>Stock<input id="iStock" type="number" step="0.01"></label><label>Min<input id="iMin" type="number" step="0.01"></label><label>Max<input id="iMax" type="number" step="0.01"></label><label>Reorder<input id="iReorder" type="number" step="0.01"></label><label>Supplier<select id="iSupplier"></select></label><div class="span2 right"><button class="btn primary">Save Item</button></div></form></div></div><div id="moveModal" class="modal"><div class="modalCard"><div class="modalHead"><h3>Stock Movement</h3><button class="close">✕</button></div><form id="moveForm" class="form"><label>Date<input id="mDate" type="datetime-local"></label><label>Item<select id="mItem"></select></label><label>Type<select id="mType"></select></label><label>Reference<input id="mRef"></label><label>Qty<input id="mQty" type="number" step="0.01" required></label><label>Person<input id="mPerson" value="Mohammad"></label><label class="span2">Comment<input id="mComment"></label><div class="span2 right"><button class="btn primary">Save Movement</button></div></form></div></div><div id="supplierModal" class="modal"><div class="modalCard"><div class="modalHead"><h3>Supplier</h3><button class="close">✕</button></div><form id="supplierForm" class="form"><input type="hidden" id="sId"><label class="span2">Supplier Name<input id="sName" required></label><label>Category<input id="sCategory"></label><label>Country<input id="sCountry"></label><label>Contact<input id="sContact"></label><label>Email<input id="sEmail"></label><label>Phone<input id="sPhone"></label><label>Rating<select id="sRating"><option>A</option><option>B</option><option>C</option></select></label><label>Lead Time Days<input id="sLead" type="number"></label><div class="span2 right"><button class="btn primary">Save Supplier</button></div></form></div></div><script src="data/sample-data.js"></script><script src="js/app.js"></script></body></html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SOMS | Solb Purchase & Inventory</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
+<body>
+<div class="layout">
+
+  <aside class="sidebar">
+    <div class="side-logo">
+      <img src="assets/solb-logo.svg" alt="SOLB Logo">
+    </div>
+
+    <div class="module-chip">
+      <span>ACTIVE MODULE</span>
+      <b>Procurement & Inventory</b>
+    </div>
+
+    <nav class="nav">
+      <button class="active" data-page="dashboard"><span>📊</span> Dashboard</button>
+      <button data-page="orders"><span>🧾</span> Purchase Cases</button>
+      <button data-page="items"><span>📦</span> Item Master</button>
+      <button data-page="stock"><span>🏭</span> Stock Movement</button>
+      <button data-page="reports"><span>📄</span> Reports</button>
+      <button data-page="backup"><span>⚙️</span> Backup</button>
+    </nav>
+
+    <div class="future-box">
+      <b>Next Modules</b>
+      <p>Operations • Maintenance • CAPEX • Refractory</p>
+    </div>
+  </aside>
+
+  <main class="main">
+    <header class="app-header">
+      <div class="header-left">
+        <img src="assets/solb-logo.svg" alt="SOLB Logo">
+        <div>
+          <h1 id="pageTitle">Dashboard</h1>
+          <p id="pageSubtitle">Clear follow-up for PR → Offers → VES → PO → Delivery → GRN/SRN → Stock.</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn light" onclick="downloadBackup()">⬇ Backup</button>
+        <button class="btn primary" onclick="openOrder()">+ New Purchase Case</button>
+      </div>
+    </header>
+
+    <section id="dashboard" class="page show">
+
+      <div class="section-title">
+        <span>01</span>
+        <div>
+          <h2>Executive Overview</h2>
+          <p>Main status of purchase cycle and inventory risk.</p>
+        </div>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi blue"><i>🧾</i><div><span>Total Cases</span><b id="kTotal">0</b></div></div>
+        <div class="kpi teal"><i>🔄</i><div><span>Open Cases</span><b id="kOpen">0</b></div></div>
+        <div class="kpi orange"><i>⏱️</i><div><span>Delayed</span><b id="kDelayed">0</b></div></div>
+        <div class="kpi red"><i>🚨</i><div><span>Low Stock</span><b id="kLow">0</b></div></div>
+      </div>
+
+      <div class="section-title compact">
+        <span>02</span>
+        <div>
+          <h2>Purchase Follow-up</h2>
+          <p>Where each case is currently stopped.</p>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="panel">
+          <div class="panel-title">
+            <div><h3>Purchase Status by Stage</h3><p>Number of cases in each stage.</p></div>
+            <span class="tag">Live</span>
+          </div>
+          <div id="statusBars" class="status-chart"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <div><h3>Needs Attention</h3><p>Open, delayed, or high priority cases.</p></div>
+            <span class="tag orange">Action</span>
+          </div>
+          <div id="attention" class="stack"></div>
+        </div>
+      </div>
+
+      <div class="section-title compact">
+        <span>03</span>
+        <div>
+          <h2>Inventory Control</h2>
+          <p>Stock alerts and latest purchase updates.</p>
+        </div>
+      </div>
+
+      <div class="grid cols-2">
+        <div class="panel">
+          <div class="panel-title">
+            <div><h3>Latest Timeline Updates</h3><p>Manual comments added to purchase cases.</p></div>
+            <span class="tag">Timeline</span>
+          </div>
+          <div id="latestUpdates" class="timeline-preview"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-title">
+            <div><h3>Stock Alerts</h3><p>Items below minimum or reorder point.</p></div>
+            <span class="tag red">Risk</span>
+          </div>
+          <div id="stockAlerts" class="stack"></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="orders" class="page">
+      <div class="section-title">
+        <span>01</span>
+        <div><h2>Purchase Cases</h2><p>Simple cards for every PR. Open any case to update details, timeline, and documents.</p></div>
+      </div>
+
+      <div class="toolbar">
+        <input id="orderSearch" placeholder="Search PR, PO, item, supplier, next action..." oninput="render()" />
+        <select id="statusFilter" onchange="render()"><option value="">All Status</option></select>
+      </div>
+      <div id="orderCards" class="order-grid"></div>
+    </section>
+
+    <section id="items" class="page">
+      <div class="section-title">
+        <span>01</span>
+        <div><h2>Item Master</h2><p>Item code, description, threshold and current balance.</p></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" onclick="openItem()">+ New Item</button>
+        <input id="itemSearch" placeholder="Search item code or description..." oninput="render()" />
+      </div>
+
+      <div class="panel table-panel">
+        <table>
+          <thead><tr><th>Item Code</th><th>Description</th><th>Category</th><th>Unit</th><th>Stock</th><th>Min</th><th>Status</th><th></th></tr></thead>
+          <tbody id="itemsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="stock" class="page">
+      <div class="section-title">
+        <span>01</span>
+        <div><h2>Stock Movement</h2><p>GRN/SRN increases balance. Issue Note decreases balance.</p></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" onclick="openMove()">+ Add GRN/SRN or Issue Note</button>
+      </div>
+
+      <div class="panel table-panel">
+        <table>
+          <thead><tr><th>Date</th><th>Item</th><th>Type</th><th>Reference</th><th>Qty</th><th>Balance</th><th>Comment</th></tr></thead>
+          <tbody id="movesTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="reports" class="page">
+      <div class="section-title">
+        <span>01</span>
+        <div><h2>Reports</h2><p>Generate PDF report or export case data.</p></div>
+      </div>
+
+      <div class="toolbar">
+        <button class="btn primary" onclick="window.print()">Generate PDF</button>
+        <button class="btn light" onclick="exportCSV()">Export CSV</button>
+      </div>
+
+      <div class="panel report">
+        <div class="report-head">
+          <img src="assets/solb-logo.svg" alt="SOLB Logo">
+          <div>
+            <h2>Purchase & Inventory Status Report</h2>
+            <p id="reportDate"></p>
+          </div>
+        </div>
+        <div class="kpi-grid small">
+          <div class="kpi blue"><i>🧾</i><div><span>Total</span><b id="rTotal">0</b></div></div>
+          <div class="kpi teal"><i>🔄</i><div><span>Open</span><b id="rOpen">0</b></div></div>
+          <div class="kpi orange"><i>⏱️</i><div><span>Delayed</span><b id="rDelayed">0</b></div></div>
+          <div class="kpi red"><i>🚨</i><div><span>Low Stock</span><b id="rLow">0</b></div></div>
+        </div>
+        <h3>Open Cases</h3>
+        <table><thead><tr><th>PR</th><th>Item</th><th>Status</th><th>Progress</th><th>Next Action</th></tr></thead><tbody id="reportCases"></tbody></table>
+        <h3>Stock Alerts</h3>
+        <table><thead><tr><th>Code</th><th>Description</th><th>Stock</th><th>Min</th><th>Status</th></tr></thead><tbody id="reportStock"></tbody></table>
+      </div>
+    </section>
+
+    <section id="backup" class="page">
+      <div class="section-title">
+        <span>01</span>
+        <div><h2>Backup & Restore</h2><p>Data is saved in the browser. Export backup regularly.</p></div>
+      </div>
+
+      <div class="panel backup-panel">
+        <h3>Data Backup</h3>
+        <p>This GitHub Pages version stores data locally in your browser. Cloud database and real file upload can be added later.</p>
+        <div class="toolbar">
+          <button class="btn primary" onclick="downloadBackup()">Export Backup JSON</button>
+          <label class="btn light">Import Backup JSON <input type="file" accept=".json" hidden onchange="importBackup(event)" /></label>
+          <button class="btn danger" onclick="resetData()">Reset Demo Data</button>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+
+<div class="modal" id="orderModal">
+  <div class="modal-box wide">
+    <div class="modal-head">
+      <div>
+        <h3 id="orderTitle">Purchase Case</h3>
+        <p>Update the case manually. Keep the workflow simple.</p>
+      </div>
+      <button onclick="closeModal()">✕</button>
+    </div>
+
+    <div class="tabs">
+      <button class="tab active" onclick="tab('details',this)">① Details</button>
+      <button class="tab" onclick="tab('timeline',this)">② Timeline & Comments</button>
+      <button class="tab" onclick="tab('docs',this)">③ Documents</button>
+    </div>
+
+    <div id="details" class="tabpage show">
+      <div class="form-section">
+        <h4>Basic Information</h4>
+        <div class="form">
+          <input type="hidden" id="oId">
+          <label>PR No.<input id="oPr"></label>
+          <label>PO No.<input id="oPo"></label>
+          <label>Item<select id="oItem"></select></label>
+          <label>Type<select id="oType"><option>Spare Parts</option><option>Raw Materials</option><option>Service</option><option>Consumables</option><option>CAPEX</option></select></label>
+          <label>Status<select id="oStatus"></select></label>
+          <label>Priority<select id="oPriority"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></label>
+        </div>
+      </div>
+
+      <div class="form-section">
+        <h4>Responsibility & Follow-up</h4>
+        <div class="form">
+          <label>Supplier<input id="oSupplier"></label>
+          <label>Owner<input id="oOwner" value="Mohammad"></label>
+          <label>Quantity<input id="oQty" type="number"></label>
+          <label>Due Date<input id="oDue" type="date"></label>
+          <label class="wide-field">Next Action<input id="oNext" placeholder="Example: Procurement to issue PO"></label>
+          <label class="wide-field">Description<textarea id="oDesc"></textarea></label>
+        </div>
+      </div>
+
+      <div class="right"><button class="btn primary" onclick="saveOrder()">Save Case</button></div>
+    </div>
+
+    <div id="timeline" class="tabpage">
+      <div class="form-section">
+        <h4>Add Manual Update</h4>
+        <div class="form compact">
+          <label>Date<input id="tDate" type="datetime-local"></label>
+          <label>Update<select id="tType"></select></label>
+          <label>Person<input id="tPerson" value="Mohammad"></label>
+          <label class="wide-field">Comment<input id="tComment" placeholder="Write update, issue, decision, or next action"></label>
+        </div>
+        <button class="btn light" onclick="addTimeline()">+ Add Update</button>
+      </div>
+      <div id="timelineList" class="timeline"></div>
+    </div>
+
+    <div id="docs" class="tabpage">
+      <div class="form-section">
+        <h4>Add Document Reference</h4>
+        <div class="form compact">
+          <label>Document Type<select id="dType"><option>PR</option><option>Offer</option><option>VES</option><option>Signed VES</option><option>PO</option><option>GRN/SRN</option><option>Issue Note</option><option>Photo</option><option>Other</option></select></label>
+          <label>File<input id="dFile" type="file"></label>
+          <label class="wide-field">Comment<input id="dComment"></label>
+        </div>
+        <button class="btn light" onclick="addDoc()">+ Add Document Reference</button>
+        <p class="note">This static version stores file names only. Permanent uploads require cloud storage in the next version.</p>
+      </div>
+      <div id="docsList" class="doc-grid"></div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="itemModal">
+  <div class="modal-box">
+    <div class="modal-head"><div><h3>Item Master</h3><p>Add or edit item balance and threshold.</p></div><button onclick="closeModal()">✕</button></div>
+    <div class="form-section">
+      <div class="form">
+        <input type="hidden" id="iId">
+        <label>Item Code<input id="iCode"></label>
+        <label>Category<input id="iCat"></label>
+        <label class="wide-field">Description<input id="iDesc"></label>
+        <label>Unit<input id="iUnit" value="pcs"></label>
+        <label>Current Stock<input id="iStock" type="number"></label>
+        <label>Minimum Stock<input id="iMin" type="number"></label>
+        <label>Reorder Point<input id="iReorder" type="number"></label>
+      </div>
+    </div>
+    <div class="right"><button class="btn primary" onclick="saveItem()">Save Item</button></div>
+  </div>
+</div>
+
+<div class="modal" id="moveModal">
+  <div class="modal-box">
+    <div class="modal-head"><div><h3>Stock Movement</h3><p>Register receiving or consumption.</p></div><button onclick="closeModal()">✕</button></div>
+    <div class="form-section">
+      <div class="form">
+        <label>Date<input id="mDate" type="datetime-local"></label>
+        <label>Item<select id="mItem"></select></label>
+        <label>Type<select id="mType"><option>GRN</option><option>SRN</option><option>Issue Note</option><option>Manual Adjustment</option></select></label>
+        <label>Reference<input id="mRef"></label>
+        <label>Qty<input id="mQty" type="number"></label>
+        <label class="wide-field">Comment<input id="mComment"></label>
+      </div>
+    </div>
+    <div class="right"><button class="btn primary" onclick="saveMove()">Save Movement</button></div>
+  </div>
+</div>
+
+<script src="js/app.js"></script>
+</body>
+</html>

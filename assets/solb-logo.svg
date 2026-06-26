@@ -1,0 +1,7 @@
+<svg width="180" height="56" viewBox="0 0 180 56" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="180" height="56" rx="14" fill="#ffffff"/>
+  <path d="M20 39 L34 15 L48 39 H39 L34 28 L29 39 H20Z" fill="#0B5F79"/>
+  <path d="M54 17 H76 C84 17 89 21 89 28 C89 35 84 39 76 39 H54V17ZM63 25V31H75C78 31 80 30 80 28C80 26 78 25 75 25H63Z" fill="#0F766E"/>
+  <text x="96" y="29" font-family="Segoe UI, Arial, sans-serif" font-size="22" font-weight="800" fill="#0B1220">SOLB</text>
+  <text x="97" y="43" font-family="Segoe UI, Arial, sans-serif" font-size="8" font-weight="700" fill="#64748B">STEEL OPERATIONS</text>
+</svg>

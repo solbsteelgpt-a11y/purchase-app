@@ -1,32 +1,19 @@
-# SOMS – Solb Operations Management System
+# SOMS Solb Theme V3
 
-## Module 1: Procurement & Inventory
-
-Version 2 rebuilds the purchase tracker as the first module in a modular operations platform.
-
-### Features
-- Executive Home Dashboard
-- Procurement Kanban and Table views
-- Purchase Case management
-- Manual Timeline and Comments
-- Document references per case
-- Purchase Cycle visualization
+A simplified and clearer Procurement & Inventory module with:
+- SOLB-style header and logo placeholder
+- Sectioned dashboard
+- Better visual hierarchy
+- Purchase case cards
+- Simple timeline/comments
+- Document references
 - Item Master
-- Supplier Master
-- Inventory Movements: GRN, SRN, Issue Note, Manual Adjustment
-- Stock thresholds and alerts
-- PDF print report
-- CSV export
-- JSON backup/import
-- Dark mode
-- Future modules roadmap
+- Stock movement
+- Reports and backup
 
-### GitHub Pages Deployment
-1. Extract this ZIP.
-2. Upload all files to your GitHub repository root.
-3. Ensure `index.html` is in the root.
-4. GitHub Pages will publish the app.
-
-### Important
-This static version stores data locally in browser LocalStorage. Use Export Backup regularly.
-V3 should add cloud database, login, multi-user permissions and permanent file storage.
+## Deploy to GitHub Pages
+Upload all files to the root of your repository:
+- index.html
+- css/style.css
+- js/app.js
+- assets/solb-logo.svg
