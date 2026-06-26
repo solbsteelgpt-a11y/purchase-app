@@ -410,3 +410,131 @@ label{font-size:12px;font-weight:850;color:#4b5563}
     page-break-before: auto !important;
   }
 }
+
+
+/* ===== V4.3 HARD FIX: Remove dashboard chart overlap completely ===== */
+
+/* Use a controlled 12-column dashboard instead of 3 equal columns */
+.dashboard-grid{
+  display: grid !important;
+  grid-template-columns: repeat(12, minmax(0, 1fr)) !important;
+  gap: 16px !important;
+  align-items: start !important;
+}
+
+/* 1st panel: Purchase Cases by Status - full width to avoid any overlap */
+.dashboard-grid > .panel:nth-child(1){
+  grid-column: 1 / -1 !important;
+}
+
+/* 2nd and 3rd panels */
+.dashboard-grid > .panel:nth-child(2){
+  grid-column: span 6 !important;
+}
+.dashboard-grid > .panel:nth-child(3){
+  grid-column: span 6 !important;
+}
+
+/* 4th, 5th, 6th panels */
+.dashboard-grid > .panel:nth-child(4),
+.dashboard-grid > .panel:nth-child(5),
+.dashboard-grid > .panel:nth-child(6){
+  grid-column: span 4 !important;
+}
+
+/* Cancel older wide-right grid-row behavior */
+.wide-right{
+  grid-row: auto !important;
+}
+
+/* Make chart and legend breathe */
+.donut-section{
+  display: grid !important;
+  grid-template-columns: 260px minmax(0, 1fr) !important;
+  gap: 34px !important;
+  align-items: center !important;
+  width: 100% !important;
+  overflow: visible !important;
+}
+
+.donut{
+  width: 220px !important;
+  height: 220px !important;
+  justify-self: center !important;
+  flex: 0 0 auto !important;
+}
+
+.donut:after{
+  width: 116px !important;
+  height: 116px !important;
+}
+
+.legend{
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(220px, 1fr)) !important;
+  gap: 10px 22px !important;
+  min-width: 0 !important;
+  overflow: visible !important;
+  align-content: center !important;
+}
+
+.legend-row{
+  display: grid !important;
+  grid-template-columns: 14px minmax(0, 1fr) auto !important;
+  gap: 8px !important;
+  align-items: center !important;
+  font-size: 13px !important;
+  min-width: 0 !important;
+}
+
+.legend-row span:nth-child(2){
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+  word-break: normal !important;
+  line-height: 1.25 !important;
+}
+
+.panel{
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+/* Responsive */
+@media(max-width: 1200px){
+  .dashboard-grid > .panel:nth-child(2),
+  .dashboard-grid > .panel:nth-child(3),
+  .dashboard-grid > .panel:nth-child(4),
+  .dashboard-grid > .panel:nth-child(5),
+  .dashboard-grid > .panel:nth-child(6){
+    grid-column: span 6 !important;
+  }
+
+  .legend{
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media(max-width: 850px){
+  .dashboard-grid > .panel{
+    grid-column: 1 / -1 !important;
+  }
+
+  .donut-section{
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+  }
+
+  .donut{
+    width: 190px !important;
+    height: 190px !important;
+  }
+
+  .donut:after{
+    width: 100px !important;
+    height: 100px !important;
+  }
+
+  .legend{
+    grid-template-columns: 1fr !important;
+  }
+}
