@@ -1,121 +1,184 @@
-const STATUS=["PR Created","Sent to Procurement","Waiting Offers","VES Review","VES Signed","PO Issued","Waiting Delivery","Received","GRN/SRN Done","Completed","Delayed"];
-const PROG={"PR Created":10,"Sent to Procurement":20,"Waiting Offers":35,"VES Review":50,"VES Signed":65,"PO Issued":75,"Waiting Delivery":85,"Received":92,"GRN/SRN Done":98,"Completed":100,"Delayed":60};
-let activeOrder=null;
-const KEY="SOMS_SOLB_THEME_V3";
+const STATUS=["Waiting Procurement","Waiting Quotations","Waiting VES","Waiting PO","Waiting Delivery","Waiting GRN","Completed","Delayed"];
+const PROG={"Waiting Procurement":15,"Waiting Quotations":30,"Waiting VES":50,"Waiting PO":65,"Waiting Delivery":80,"Waiting GRN":92,"Completed":100,"Delayed":55};
+const COLORS=["#c9002b","#f28c00","#f4b03d","#0b65a3","#23a0b5","#16a34a","#111827","#8f969b"];
+const KEY="SOMS_SOLB_UPDATED_V1";
+let activeCase=null;
 
+function id(){return Math.random().toString(36).slice(2,10)}
+function date(offset=0){let d=new Date();d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10)}
+function datetime(offset=0){let d=new Date();d.setDate(d.getDate()+offset);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
 function demo(){
+ const items=[
+  {id:id(),code:"BRG-23124",desc:"Bearing SKF 23124",cat:"Bearing",unit:"pcs",stock:3,min:5,reorder:8},
+  {id:id(),code:"ELEC-RP600",desc:"Graphite Electrode RP 600",cat:"Electrode",unit:"pcs",stock:8,min:10,reorder:15},
+  {id:id(),code:"LIME-QL",desc:"Lime - Quick Lime",cat:"Raw Material",unit:"ton",stock:245,min:80,reorder:150},
+  {id:id(),code:"HYD-OIL-68",desc:"Hydraulic Oil 68",cat:"Consumable",unit:"drum",stock:15,min:20,reorder:30},
+  {id:id(),code:"REF-BRICK",desc:"Refractory Bricks - MgO",cat:"Refractory",unit:"ton",stock:6,min:10,reorder:20}
+ ];
  return {
-  items:[
-    {id:id(),code:"BRG-22220",desc:"Bearing SKF 22220",cat:"Bearing",unit:"pcs",stock:3,min:2,reorder:4},
-    {id:id(),code:"LIME-001",desc:"Quick Lime",cat:"Raw Material",unit:"ton",stock:120,min:80,reorder:150},
-    {id:id(),code:"ELEC-600",desc:"Graphite Electrode 600 mm",cat:"Electrode",unit:"pcs",stock:8,min:12,reorder:18}
+  items,
+  cases:[
+   {id:id(),pr:"PR-2025-041",po:"",item:items[0].id,status:"Waiting Procurement",priority:"High",supplier:"SKF Egypt",owner:"Mohammad",qty:10,due:date(-15),next:"Follow up with procurement for RFQ",desc:"Bearing replacement stock.",timeline:[{date:datetime(-16),type:"PR Created",person:"Mohammad",comment:"PR created and sent to procurement."}],docs:[]},
+   {id:id(),pr:"PR-2025-038",po:"",item:items[4].id,status:"Waiting VES",priority:"High",supplier:"SMS Group",owner:"Mohammad",qty:12,due:date(-12),next:"Review and sign VES",desc:"Refractory bricks purchase.",timeline:[{date:datetime(-14),type:"Offers Received",person:"Procurement",comment:"Offers received and VES required."}],docs:[]},
+   {id:id(),pr:"PR-2025-045",po:"PO-2025-079",item:items[3].id,status:"Waiting Delivery",priority:"Medium",supplier:"ExxonMobil",owner:"Mohammad",qty:20,due:date(-9),next:"Follow shipment",desc:"Hydraulic oil.",timeline:[{date:datetime(-10),type:"PO Issued",person:"Procurement",comment:"PO issued."}],docs:[]},
+   {id:id(),pr:"PR-2025-037",po:"",item:items[1].id,status:"Waiting PO",priority:"High",supplier:"Resonac",owner:"Mohammad",qty:24,due:date(7),next:"Issue purchase order",desc:"Electrode replenishment.",timeline:[{date:datetime(-3),type:"VES Signed",person:"Mohammad",comment:"Technical approval completed."}],docs:[]},
+   {id:id(),pr:"PR-2025-050",po:"",item:items[2].id,status:"Completed",priority:"Medium",supplier:"Saudi Lime",owner:"Mohammad",qty:245,due:date(2),next:"Closed",desc:"Quick lime.",timeline:[{date:datetime(-1),type:"Completed",person:"Warehouse",comment:"GRN completed."}],docs:[]}
   ],
-  orders:[],
-  moves:[]
+  moves:[
+    {id:id(),date:datetime(-1),item:items[2].id,type:"GRN",ref:"GRN-2025-0285",qty:245,balance:245,comment:"Saudi Lime received."},
+    {id:id(),date:datetime(-2),item:items[1].id,type:"Issue Note",ref:"ISS-2025-0156",qty:-4,balance:8,comment:"Issued for EAF."}
+  ]
  }
 }
 let data=JSON.parse(localStorage.getItem(KEY)||"null")||demo();
-if(!data.orders.length){
- data.orders=[
-  {id:id(),pr:"PR-26001",po:"",item:data.items[0].id,status:"VES Signed",type:"Spare Parts",priority:"High",supplier:"SKF Supplier",owner:"Mohammad",qty:6,due:days(8),next:"Procurement to issue PO",desc:"Urgent bearing for EAF auxiliary equipment.",timeline:[{date:dateTime(-10),type:"PR Created",person:"Mohammad",comment:"PR created."},{date:dateTime(-7),type:"Waiting Offers",person:"Procurement",comment:"RFQ sent to suppliers."},{date:dateTime(-2),type:"VES Signed",person:"Mohammad",comment:"Technical acceptance completed."}],docs:[]},
-  {id:id(),pr:"PR-26002",po:"PO-8841",item:data.items[2].id,status:"Waiting Delivery",type:"Consumables",priority:"Critical",supplier:"Electrode Supplier",owner:"Mohammad",qty:24,due:days(-2),next:"Follow delayed delivery",desc:"Graphite electrode stock replenishment.",timeline:[{date:dateTime(-20),type:"PR Created",person:"Mohammad",comment:"Minimum stock breached."},{date:dateTime(-12),type:"PO Issued",person:"Procurement",comment:"PO issued."}],docs:[]}
- ]; save();
-}
-function id(){return Math.random().toString(36).slice(2,10)}
 function save(){localStorage.setItem(KEY,JSON.stringify(data))}
-function days(n=0){let d=new Date();d.setDate(d.getDate()+n);return d.toISOString().slice(0,10)}
-function dateTime(offset=0){let d=new Date();d.setDate(d.getDate()+offset);d.setMinutes(d.getMinutes()-d.getTimezoneOffset());return d.toISOString().slice(0,16)}
-function item(idv){return data.items.find(x=>x.id===idv)}
+function item(idv){return data.items.find(i=>i.id===idv)}
 function itemName(idv){let i=item(idv);return i?`${i.code} - ${i.desc}`:""}
-function delayed(o){return o.status!=="Completed"&&o.due&&new Date(o.due)<new Date(new Date().toISOString().slice(0,10))}
-function stockStatus(i){if(+i.stock<=+i.min*.5)return ["Critical","red"];if(+i.stock<+i.min)return ["Low","orange"];if(+i.stock<=+i.reorder)return ["Reorder","orange"];return ["Safe","green"]}
-function badge(t,c){return `<span class="badge ${c}">${t}</span>`}
-function bar(p){return `<div class="progress"><div style="width:${p}%"></div></div><small>${p}% complete</small>`}
+function isDelayed(c){return c.status!=="Completed" && c.due && new Date(c.due)<new Date(new Date().toISOString().slice(0,10))}
+function stockState(i){if(+i.stock<=+i.min*.5)return ["Critical","red"];if(+i.stock<+i.min)return ["Low","orange"];if(+i.stock<=+i.reorder)return ["Near Reorder","orange"];return ["Safe","green"]}
+function pill(text,color){return `<span class="pill ${color}">${text}</span>`}
+function progress(c){return PROG[c.status]||0}
+function bar(c){return `<div class="progress"><div style="width:${progress(c)}%"></div></div><small>${progress(c)}% complete</small>`}
 
-document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>{
- document.querySelectorAll(".nav button").forEach(x=>x.classList.remove("active"));
- b.classList.add("active");
- document.querySelectorAll(".page").forEach(p=>p.classList.remove("show"));
- document.getElementById(b.dataset.page).classList.add("show");
- const titles={
-  dashboard:["Dashboard","Clear follow-up for PR → Offers → VES → PO → Delivery → GRN/SRN → Stock."],
-  orders:["Purchase Cases","Open any PR card to update details, timeline, comments and documents."],
-  items:["Item Master","Manage item codes, minimum stock and reorder point."],
-  stock:["Stock Movement","Register GRN/SRN receiving and Issue Note consumption."],
-  reports:["Reports","Generate PDF-style report and export CSV."],
-  backup:["Backup","Export and import your local data."]
- };
- pageTitle.textContent=titles[b.dataset.page][0];
- pageSubtitle.textContent=titles[b.dataset.page][1];
- render();
+document.addEventListener("DOMContentLoaded",()=>{
+ STATUS.forEach(s=>{statusFilter.innerHTML+=`<option>${s}</option>`; cStatus.innerHTML+=`<option>${s}</option>`; tType.innerHTML+=`<option>${s}</option>`});
+ document.querySelectorAll(".nav button").forEach(b=>b.onclick=()=>showPage(b.dataset.page));
+ fillItems(); render();
 });
-statusFilter.innerHTML='<option value="">All Status</option>'+STATUS.map(s=>`<option>${s}</option>`).join("");
-oStatus.innerHTML=STATUS.map(s=>`<option>${s}</option>`).join("");
-tType.innerHTML=STATUS.map(s=>`<option>${s}</option>`).join("");
-function fillItems(){let opts=data.items.map(i=>`<option value="${i.id}">${i.code} - ${i.desc}</option>`).join("");oItem.innerHTML=opts;mItem.innerHTML=opts}
-fillItems(); render();
+
+function showPage(id){
+ document.querySelectorAll(".page").forEach(p=>p.classList.remove("show"));
+ document.getElementById(id).classList.add("show");
+ document.querySelectorAll(".nav button").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
+ const titleMap={dashboard:["SOMS","Solb Operations Management System — Procurement & Inventory"],cases:["Purchase Cases","Track PR, VES, PO, Delivery and GRN/SRN."],inventory:["Inventory","Stock receiving and consumption."],items:["Item Master","Stock items and thresholds."],reports:["Reports","PDF and CSV reports."],backup:["Backup","Export and import local data."]};
+ pageTitle.textContent=titleMap[id][0]; pageSubtitle.textContent=titleMap[id][1];
+ render();
+}
+
+function fillItems(){
+ const opts=data.items.map(i=>`<option value="${i.id}">${i.code} - ${i.desc}</option>`).join("");
+ cItem.innerHTML=opts; mItem.innerHTML=opts;
+}
 
 function render(){
  save(); fillItems();
- let total=data.orders.length, open=data.orders.filter(o=>o.status!=="Completed").length, del=data.orders.filter(delayed).length, low=data.items.filter(i=>stockStatus(i)[0]!="Safe").length;
- kTotal.textContent=total;kOpen.textContent=open;kDelayed.textContent=del;kLow.textContent=low;rTotal.textContent=total;rOpen.textContent=open;rDelayed.textContent=del;rLow.textContent=low;
- let counts=STATUS.map(s=>[s,data.orders.filter(o=>o.status===s).length]).filter(x=>x[1]);let max=Math.max(1,...counts.map(x=>x[1]));
- statusBars.innerHTML=counts.map(x=>`<div class="bar" style="height:${40+x[1]/max*175}px"><b>${x[1]}</b><span>${x[0].replaceAll(" ","<br>")}</span></div>`).join("")||"<p>No cases yet.</p>";
- let needs=data.orders.filter(o=>o.status!=="Completed").sort((a,b)=>(delayed(b)?1:0)-(delayed(a)?1:0)).slice(0,5);
- attention.innerHTML=needs.map(o=>`<div class="action-card" onclick="openOrder('${o.id}')"><b>${delayed(o)?"🔴 Delayed":"🟡 Open"} — ${o.pr}</b><span>${o.next||"Update required"}</span><br><small>${itemName(o.item)} • Due: ${o.due||"-"} • ${o.supplier||"-"}</small></div>`).join("")||"<p>No actions.</p>";
- let events=[];data.orders.forEach(o=>(o.timeline||[]).forEach(t=>events.push({...t,pr:o.pr,oid:o.id,item:itemName(o.item)})));events.sort((a,b)=>String(b.date).localeCompare(String(a.date)));
- latestUpdates.innerHTML=events.slice(0,6).map(e=>`<div class="update-card" onclick="openOrder('${e.oid}')"><b>${e.type} — ${e.pr}</b><small>${e.date.replace("T"," ")} • ${e.person||""}</small><p>${e.comment||""}</p></div>`).join("");
- let alerts=data.items.filter(i=>stockStatus(i)[0]!="Safe");
- stockAlerts.innerHTML=alerts.map(i=>`<div class="stock-card ${stockStatus(i)[1]}"><b>${i.code} — ${stockStatus(i)[0]}</b><span>${i.desc}</span><br><small>Stock: ${i.stock} ${i.unit} • Min: ${i.min} • Reorder: ${i.reorder}</small></div>`).join("")||"<p>No stock alerts.</p>";
- renderOrders();renderItems();renderMoves();renderReport();
+ const total=data.cases.length;
+ const completed=data.cases.filter(c=>c.status==="Completed").length;
+ const delayed=data.cases.filter(isDelayed).length;
+ const incoming=data.cases.filter(c=>c.status==="Waiting Delivery").length;
+ const low=data.items.filter(i=>stockState(i)[0]!=="Safe").length;
+ kTotal.textContent=total; kCompleted.textContent=completed; kDelayed.textContent=delayed; kIncoming.textContent=incoming; kLow.textContent=low;
+ rTotal.textContent=total; rCompleted.textContent=completed; rDelayed.textContent=delayed; rLow.textContent=low; donutTotal.textContent=total;
+
+ renderDonut(); renderDashboardLists(); renderCases(); renderItems(); renderMoves(); renderReports();
 }
-function renderOrders(){
- let q=(orderSearch?.value||"").toLowerCase(), f=statusFilter?.value||"";
- let rows=data.orders.filter(o=>(!f||o.status===f)&&[o.pr,o.po,itemName(o.item),o.supplier,o.status,o.priority,o.next].join(" ").toLowerCase().includes(q));
- orderCards.innerHTML=rows.map(o=>`<div class="order-card ${delayed(o)?"delayed":""}" onclick="openOrder('${o.id}')"><h3>${o.pr}</h3><div class="item">${itemName(o.item)}</div><p class="meta">Supplier: ${o.supplier||"-"} • Due: ${o.due||"-"}</p>${badge(delayed(o)?"Delayed":o.status,delayed(o)?"red":"blue")} ${badge(o.priority,o.priority==="Critical"?"red":o.priority==="High"?"orange":"gray")}${bar(PROG[o.status]||0)}<p class="meta"><b>Next Action:</b> ${o.next||"-"}</p></div>`).join("");
+
+function renderDonut(){
+ const counts=STATUS.map((s,i)=>({s,c:data.cases.filter(x=>x.status===s).length,color:COLORS[i]})).filter(x=>x.c>0);
+ const total=Math.max(1,counts.reduce((a,b)=>a+b.c,0));
+ let start=0, parts=[];
+ counts.forEach(x=>{let deg=x.c/total*360; parts.push(`${x.color} ${start}deg ${start+deg}deg`); start+=deg;});
+ donut.style.background=`conic-gradient(${parts.join(",")})`;
+ legend.innerHTML=counts.map(x=>`<div class="legend-row"><span class="dot" style="background:${x.color}"></span><span>${x.s}</span><b>${x.c}</b></div>`).join("");
 }
+
+function renderDashboardLists(){
+ const priority=data.cases.filter(c=>c.status!=="Completed").sort((a,b)=>(isDelayed(b)?1:0)-(isDelayed(a)?1:0)).slice(0,5);
+ priorityCases.innerHTML=priority.map(c=>`<div class="list-item" onclick="openCase('${c.id}')"><div><b>${c.pr}</b><small>${itemName(c.item)} • ${isDelayed(c)?Math.abs(Math.round((new Date()-new Date(c.due))/86400000))+" days overdue":c.due}</small></div>${pill(c.priority,c.priority==="High"||c.priority==="Critical"?"red":"orange")}</div>`).join("");
+ recentCases.innerHTML=data.cases.slice(0,5).map(c=>`<div class="list-item" onclick="openCase('${c.id}')"><div><b>${c.pr}</b><small>${itemName(c.item)}</small></div>${pill(c.status,c.status==="Completed"?"green":isDelayed(c)?"red":"gray")}</div>`).join("");
+ recentMoves.innerHTML=data.moves.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5).map(m=>`<div class="list-item"><div><b>${m.ref}</b><small>${itemName(m.item)} • ${m.date.replace("T"," ")}</small></div><b>${m.qty}</b></div>`).join("");
+ todayActions.innerHTML=priority.map(c=>`<div class="task" onclick="openCase('${c.id}')"><div><b>☐ ${c.next||"Update required"}</b><small>${itemName(c.item)}</small></div><span>${c.pr}</span></div>`).join("");
+ lowStockTable.innerHTML=data.items.filter(i=>stockState(i)[0]!=="Safe").map(i=>`<tr><td>${i.desc}</td><td>${i.stock}</td><td>${i.min}</td><td>${pill(stockState(i)[0],stockState(i)[1])}</td></tr>`).join("");
+}
+
+function renderCases(){
+ const q=(caseSearch?.value||"").toLowerCase(), f=statusFilter?.value||"";
+ const rows=data.cases.filter(c=>(!f||c.status===f)&&[c.pr,c.po,itemName(c.item),c.status,c.supplier,c.next].join(" ").toLowerCase().includes(q));
+ caseCards.innerHTML=rows.map(c=>`<div class="case-card ${isDelayed(c)?"delayed":""}" onclick="openCase('${c.id}')"><h3>${c.pr}</h3><div class="item">${itemName(c.item)}</div><p class="meta">Supplier: ${c.supplier||"-"} • Due: ${c.due||"-"}</p>${pill(isDelayed(c)?"Overdue":c.status,isDelayed(c)?"red":c.status==="Completed"?"green":"gray")} ${pill(c.priority,c.priority==="Critical"||c.priority==="High"?"red":"orange")}${bar(c)}<p class="meta"><b>Next Action:</b> ${c.next||"-"}</p></div>`).join("");
+}
+
 function renderItems(){
- let q=(itemSearch?.value||"").toLowerCase();
- itemsTable.innerHTML=data.items.filter(i=>[i.code,i.desc,i.cat].join(" ").toLowerCase().includes(q)).map(i=>`<tr><td><b>${i.code}</b></td><td>${i.desc}</td><td>${i.cat}</td><td>${i.unit}</td><td>${i.stock}</td><td>${i.min}</td><td>${badge(stockStatus(i)[0],stockStatus(i)[1])}</td><td><button class="btn light" onclick="event.stopPropagation();openItem('${i.id}')">Edit</button></td></tr>`).join("");
+ const q=(itemSearch?.value||"").toLowerCase();
+ itemsTable.innerHTML=data.items.filter(i=>[i.code,i.desc,i.cat].join(" ").toLowerCase().includes(q)).map(i=>`<tr><td><b>${i.code}</b></td><td>${i.desc}</td><td>${i.cat}</td><td>${i.unit}</td><td>${i.stock}</td><td>${i.min}</td><td>${i.reorder}</td><td>${pill(stockState(i)[0],stockState(i)[1])}</td><td><button class="btn ghost" onclick="event.stopPropagation();openItem('${i.id}')">Edit</button></td></tr>`).join("");
 }
-function renderMoves(){movesTable.innerHTML=data.moves.slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map(m=>`<tr><td>${m.date.replace("T"," ")}</td><td>${itemName(m.item)}</td><td>${m.type}</td><td>${m.ref||""}</td><td>${m.qty}</td><td>${m.balance}</td><td>${m.comment||""}</td></tr>`).join("")}
-function renderReport(){
+
+function renderMoves(){
+ movesTable.innerHTML=data.moves.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(m=>`<tr><td>${m.date.replace("T"," ")}</td><td>${itemName(m.item)}</td><td>${m.type}</td><td>${m.ref||""}</td><td>${m.qty}</td><td>${m.balance}</td><td>${m.comment||""}</td></tr>`).join("");
+}
+
+function renderReports(){
  reportDate.textContent="Generated: "+new Date().toLocaleString();
- reportCases.innerHTML=data.orders.filter(o=>o.status!=="Completed").map(o=>`<tr><td>${o.pr}</td><td>${itemName(o.item)}</td><td>${delayed(o)?"Delayed":o.status}</td><td>${PROG[o.status]||0}%</td><td>${o.next||""}</td></tr>`).join("");
- reportStock.innerHTML=data.items.filter(i=>stockStatus(i)[0]!="Safe").map(i=>`<tr><td>${i.code}</td><td>${i.desc}</td><td>${i.stock}</td><td>${i.min}</td><td>${stockStatus(i)[0]}</td></tr>`).join("");
+ reportCases.innerHTML=data.cases.filter(c=>c.status!=="Completed").map(c=>`<tr><td>${c.pr}</td><td>${itemName(c.item)}</td><td>${isDelayed(c)?"Overdue":c.status}</td><td>${progress(c)}%</td><td>${c.next||""}</td></tr>`).join("");
+ reportStock.innerHTML=data.items.filter(i=>stockState(i)[0]!=="Safe").map(i=>`<tr><td>${i.code}</td><td>${i.desc}</td><td>${i.stock}</td><td>${i.min}</td><td>${stockState(i)[0]}</td></tr>`).join("");
 }
 
-function openOrder(oid){
- activeOrder=oid||null; fillItems();
- let o=oid?data.orders.find(x=>x.id===oid):{id:"",pr:"",po:"",item:data.items[0]?.id,status:"PR Created",type:"Spare Parts",priority:"Medium",supplier:"",owner:"Mohammad",qty:0,due:"",next:"",desc:"",timeline:[],docs:[]};
- orderTitle.textContent=oid?`Purchase Case — ${o.pr}`:"New Purchase Case";
- oId.value=o.id;oPr.value=o.pr;oPo.value=o.po;oItem.value=o.item;oStatus.value=o.status;oType.value=o.type;oPriority.value=o.priority;oSupplier.value=o.supplier;oOwner.value=o.owner;oQty.value=o.qty;oDue.value=o.due;oNext.value=o.next;oDesc.value=o.desc;
- tDate.value=dateTime();tPerson.value="Mohammad";tComment.value="";renderTimeline(o);renderDocs(o);
- document.getElementById("orderModal").classList.add("show");
+function openCase(idv=null){
+ activeCase=idv;
+ const c=idv?data.cases.find(x=>x.id===idv):{id:"",pr:"",po:"",item:data.items[0]?.id,status:"Waiting Procurement",type:"Spare Parts",priority:"Medium",supplier:"",owner:"Mohammad",qty:0,due:"",next:"",desc:"",timeline:[],docs:[]};
+ caseModalTitle.textContent=idv?`Purchase Case — ${c.pr}`:"New Purchase Case";
+ cId.value=c.id;cPr.value=c.pr;cPo.value=c.po;cItem.value=c.item;cType.value=c.type;cStatus.value=c.status;cPriority.value=c.priority;cSupplier.value=c.supplier;cOwner.value=c.owner;cQty.value=c.qty;cDue.value=c.due;cNext.value=c.next;cDesc.value=c.desc;
+ tDate.value=datetime();tPerson.value="Mohammad";tComment.value="";
+ renderTimeline(c);renderDocs(c);
+ caseModal.classList.add("show");
 }
-function saveOrder(){
- let oid=oId.value||id(); let o=data.orders.find(x=>x.id===oid);
- let obj={id:oid,pr:oPr.value,po:oPo.value,item:oItem.value,status:oStatus.value,type:oType.value,priority:oPriority.value,supplier:oSupplier.value,owner:oOwner.value,qty:+oQty.value||0,due:oDue.value,next:oNext.value,desc:oDesc.value,timeline:o?.timeline||[],docs:o?.docs||[]};
- if(!o){obj.timeline.push({date:dateTime(),type:"PR Created",person:oOwner.value||"Mohammad",comment:"Case created."});data.orders.push(obj)}else Object.assign(o,obj);
- activeOrder=oid;save();render();openOrder(oid);
+
+function saveCase(){
+ const idv=cId.value||id(); let c=data.cases.find(x=>x.id===idv);
+ const obj={id:idv,pr:cPr.value,po:cPo.value,item:cItem.value,type:cType.value,status:cStatus.value,priority:cPriority.value,supplier:cSupplier.value,owner:cOwner.value,qty:+cQty.value||0,due:cDue.value,next:cNext.value,desc:cDesc.value,timeline:c?.timeline||[],docs:c?.docs||[]};
+ if(!c){obj.timeline.push({date:datetime(),type:"Waiting Procurement",person:cOwner.value||"Mohammad",comment:"Case created."});data.cases.push(obj)}else Object.assign(c,obj);
+ activeCase=idv; save(); render(); openCase(idv);
 }
-function renderTimeline(o){timelineList.innerHTML=(o.timeline||[]).slice().sort((a,b)=>String(b.date).localeCompare(String(a.date))).map((t,i)=>`<div class="event"><b>${t.type}</b><small>${t.date.replace("T"," ")} • ${t.person||""}</small><p>${t.comment||""}</p><button class="btn danger" onclick="deleteTl(${i})">Delete</button></div>`).join("")||"<p>No updates yet.</p>"}
+
+function renderTimeline(c){
+ timelineList.innerHTML=(c.timeline||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)).map((t,i)=>`<div class="event"><b>${t.type}</b><small>${t.date.replace("T"," ")} • ${t.person||""}</small><p>${t.comment||""}</p><button class="btn danger" onclick="deleteTimeline(${i})">Delete</button></div>`).join("")||"<p class='muted'>No updates yet.</p>";
+}
 function addTimeline(){
- let o=data.orders.find(x=>x.id===activeOrder); if(!o){alert("Save case first");return}
- o.timeline.push({date:tDate.value||dateTime(),type:tType.value,person:tPerson.value,comment:tComment.value});o.status=tType.value;save();render();openOrder(o.id)
+ const c=data.cases.find(x=>x.id===activeCase); if(!c){alert("Save case first");return}
+ c.timeline.push({date:tDate.value||datetime(),type:tType.value,person:tPerson.value,comment:tComment.value});
+ c.status=tType.value; save(); render(); openCase(c.id);
 }
-function deleteTl(i){let o=data.orders.find(x=>x.id===activeOrder);o.timeline.splice(i,1);save();render();openOrder(o.id)}
-function renderDocs(o){docsList.innerHTML=(o.docs||[]).map((d,i)=>`<div class="doc"><b>📄 ${d.type}</b><br><small>${d.file||"No file"}</small><p>${d.comment||""}</p><button class="btn danger" onclick="deleteDoc(${i})">Delete</button></div>`).join("")||"<p>No documents yet.</p>"}
-function addDoc(){let o=data.orders.find(x=>x.id===activeOrder);if(!o){alert("Save case first");return}o.docs.push({type:dType.value,file:dFile.files[0]?.name||"",comment:dComment.value,date:dateTime()});dFile.value="";dComment.value="";save();render();openOrder(o.id)}
-function deleteDoc(i){let o=data.orders.find(x=>x.id===activeOrder);o.docs.splice(i,1);save();render();openOrder(o.id)}
+function deleteTimeline(i){
+ const c=data.cases.find(x=>x.id===activeCase); c.timeline.splice(i,1); save(); render(); openCase(c.id);
+}
+function renderDocs(c){
+ docsList.innerHTML=(c.docs||[]).map((d,i)=>`<div class="doc"><b>📄 ${d.type}</b><br><small>${d.file||"No file selected"}</small><p>${d.comment||""}</p><button class="btn danger" onclick="deleteDoc(${i})">Delete</button></div>`).join("")||"<p class='muted'>No documents yet.</p>";
+}
+function addDoc(){
+ const c=data.cases.find(x=>x.id===activeCase); if(!c){alert("Save case first");return}
+ c.docs.push({type:dType.value,file:dFile.files[0]?.name||"",comment:dComment.value,date:datetime()});
+ dFile.value="";dComment.value=""; save(); render(); openCase(c.id);
+}
+function deleteDoc(i){const c=data.cases.find(x=>x.id===activeCase);c.docs.splice(i,1);save();render();openCase(c.id);}
 
-function openItem(iid){let i=iid?data.items.find(x=>x.id===iid):{id:"",code:"",desc:"",cat:"",unit:"pcs",stock:0,min:0,reorder:0};iId.value=i.id;iCode.value=i.code;iDesc.value=i.desc;iCat.value=i.cat;iUnit.value=i.unit;iStock.value=i.stock;iMin.value=i.min;iReorder.value=i.reorder;document.getElementById("itemModal").classList.add("show")}
-function saveItem(){let iid=iId.value||id();let i=data.items.find(x=>x.id===iid);let obj={id:iid,code:iCode.value,desc:iDesc.value,cat:iCat.value,unit:iUnit.value,stock:+iStock.value||0,min:+iMin.value||0,reorder:+iReorder.value||0};if(i)Object.assign(i,obj);else data.items.push(obj);closeModal();render()}
-function openMove(){fillItems();mDate.value=dateTime();mQty.value="";mRef.value="";mComment.value="";document.getElementById("moveModal").classList.add("show")}
-function saveMove(){let i=item(mItem.value);let q=+mQty.value||0;if(mType.value==="Issue Note")q=-Math.abs(q);else if(mType.value!=="Manual Adjustment")q=Math.abs(q);i.stock=(+i.stock||0)+q;data.moves.push({date:mDate.value||dateTime(),item:i.id,type:mType.value,ref:mRef.value,qty:q,balance:i.stock,comment:mComment.value});closeModal();render()}
-function tab(idv,b){document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");document.querySelectorAll(".tabpage").forEach(x=>x.classList.remove("show"));document.getElementById(idv).classList.add("show")}
+function openItem(idv=null){
+ const i=idv?data.items.find(x=>x.id===idv):{id:"",code:"",desc:"",cat:"",unit:"pcs",stock:0,min:0,reorder:0};
+ iId.value=i.id;iCode.value=i.code;iDesc.value=i.desc;iCat.value=i.cat;iUnit.value=i.unit;iStock.value=i.stock;iMin.value=i.min;iReorder.value=i.reorder;
+ itemModal.classList.add("show");
+}
+function saveItem(){
+ const idv=iId.value||id(); let i=data.items.find(x=>x.id===idv);
+ const obj={id:idv,code:iCode.value,desc:iDesc.value,cat:iCat.value,unit:iUnit.value,stock:+iStock.value||0,min:+iMin.value||0,reorder:+iReorder.value||0};
+ if(i)Object.assign(i,obj);else data.items.push(obj);
+ closeModal(); render();
+}
+function openMove(type=""){
+ fillItems(); mDate.value=datetime(); mType.value=type||"GRN"; mQty.value="";mRef.value="";mComment.value=""; moveModal.classList.add("show");
+}
+function saveMove(){
+ const i=item(mItem.value); let qty=+mQty.value||0;
+ if(mType.value==="Issue Note")qty=-Math.abs(qty); else if(mType.value!=="Manual Adjustment")qty=Math.abs(qty);
+ i.stock=(+i.stock||0)+qty;
+ data.moves.push({id:id(),date:mDate.value||datetime(),item:i.id,type:mType.value,ref:mRef.value,qty,balance:i.stock,comment:mComment.value});
+ closeModal(); render();
+}
+function switchTab(idv,btn){
+ document.querySelectorAll(".tab").forEach(t=>t.classList.remove("active"));
+ btn.classList.add("active");
+ document.querySelectorAll(".tabpage").forEach(p=>p.classList.remove("show"));
+ document.getElementById(idv).classList.add("show");
+}
 function closeModal(){document.querySelectorAll(".modal").forEach(m=>m.classList.remove("show"))}
-function downloadBackup(){let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="SOMS_backup.json";a.click()}
-function importBackup(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{data=JSON.parse(r.result);save();render()};r.readAsText(f)}
-function resetData(){if(confirm("Reset all data?")){localStorage.removeItem(KEY);location.reload()}}
-function exportCSV(){let rows=[["PR","PO","Item","Status","Priority","Supplier","Due","Next Action"]];data.orders.forEach(o=>rows.push([o.pr,o.po,itemName(o.item),o.status,o.priority,o.supplier,o.due,o.next]));let csv=rows.map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");let a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="purchase_cases.csv";a.click()}
+function downloadBackup(){const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"}));a.download="SOMS_backup.json";a.click()}
+function importBackup(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{data=JSON.parse(r.result);save();render()};r.readAsText(f)}
+function resetData(){if(confirm("Reset all demo data?")){localStorage.removeItem(KEY);location.reload()}}
+function exportCSV(){const rows=[["PR","PO","Item","Status","Priority","Supplier","Due","Next Action"]];data.cases.forEach(c=>rows.push([c.pr,c.po,itemName(c.item),c.status,c.priority,c.supplier,c.due,c.next]));const csv=rows.map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([csv],{type:"text/csv"}));a.download="SOMS_purchase_cases.csv";a.click()}

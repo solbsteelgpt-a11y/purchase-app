@@ -2,165 +2,163 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SOMS | Solb Purchase & Inventory</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>SOMS | SOLB STEEL</title>
+  <link rel="stylesheet" href="css/style.css"/>
 </head>
 <body>
-<div class="layout">
+<div class="app">
 
   <aside class="sidebar">
-    <div class="side-logo">
-      <img src="assets/solb-logo.svg" alt="SOLB Logo">
-    </div>
-
-    <div class="module-chip">
-      <span>ACTIVE MODULE</span>
-      <b>Procurement & Inventory</b>
+    <div class="logo-box">
+      <img src="assets/solb-logo.png" alt="SOLB STEEL Logo"/>
     </div>
 
     <nav class="nav">
-      <button class="active" data-page="dashboard"><span>📊</span> Dashboard</button>
-      <button data-page="orders"><span>🧾</span> Purchase Cases</button>
-      <button data-page="items"><span>📦</span> Item Master</button>
-      <button data-page="stock"><span>🏭</span> Stock Movement</button>
-      <button data-page="reports"><span>📄</span> Reports</button>
-      <button data-page="backup"><span>⚙️</span> Backup</button>
+      <button class="active" data-page="dashboard">🏠 <span>Dashboard</span></button>
+      <button data-page="cases">🧾 <span>Purchase Cases</span></button>
+      <button data-page="inventory">📦 <span>Inventory</span></button>
+      <button data-page="items">🏷️ <span>Item Master</span></button>
+      <button data-page="reports">📄 <span>Reports</span></button>
+      <button data-page="backup">⚙️ <span>Backup</span></button>
     </nav>
 
-    <div class="future-box">
-      <b>Next Modules</b>
-      <p>Operations • Maintenance • CAPEX • Refractory</p>
+    <div class="future">
+      <h4>Future Modules</h4>
+      <p>Operations</p>
+      <p>Maintenance</p>
+      <p>CAPEX</p>
+      <p>Refractory</p>
     </div>
   </aside>
 
   <main class="main">
-    <header class="app-header">
-      <div class="header-left">
-        <img src="assets/solb-logo.svg" alt="SOLB Logo">
+    <header class="topbar">
+      <div class="top-left">
+        <button class="menu-btn">☰</button>
         <div>
-          <h1 id="pageTitle">Dashboard</h1>
-          <p id="pageSubtitle">Clear follow-up for PR → Offers → VES → PO → Delivery → GRN/SRN → Stock.</p>
+          <h1 id="pageTitle">SOMS</h1>
+          <p id="pageSubtitle">Solb Operations Management System — Procurement & Inventory</p>
         </div>
       </div>
-      <div class="header-actions">
-        <button class="btn light" onclick="downloadBackup()">⬇ Backup</button>
-        <button class="btn primary" onclick="openOrder()">+ New Purchase Case</button>
+
+      <div class="top-right">
+        <div class="user">
+          <div class="avatar">M</div>
+          <div>
+            <b>Mohammad</b>
+            <span>Melt Shop Manager</span>
+          </div>
+        </div>
+        <button class="btn ghost" onclick="downloadBackup()">⬇ Backup</button>
+        <button class="btn primary" onclick="openCase()">+ New Purchase Case</button>
       </div>
     </header>
 
     <section id="dashboard" class="page show">
-
-      <div class="section-title">
-        <span>01</span>
+      <div class="page-head">
         <div>
-          <h2>Executive Overview</h2>
-          <p>Main status of purchase cycle and inventory risk.</p>
+          <h2>Executive Dashboard</h2>
+          <p>Clear overview for purchase cycle, stock alerts, and pending actions.</p>
         </div>
+        <button class="btn primary" onclick="openCase()">+ New Purchase Request</button>
       </div>
 
-      <div class="kpi-grid">
-        <div class="kpi blue"><i>🧾</i><div><span>Total Cases</span><b id="kTotal">0</b></div></div>
-        <div class="kpi teal"><i>🔄</i><div><span>Open Cases</span><b id="kOpen">0</b></div></div>
-        <div class="kpi orange"><i>⏱️</i><div><span>Delayed</span><b id="kDelayed">0</b></div></div>
-        <div class="kpi red"><i>🚨</i><div><span>Low Stock</span><b id="kLow">0</b></div></div>
+      <div class="kpi-row">
+        <div class="kpi red"><div class="icon">📋</div><div><span>Total Cases</span><b id="kTotal">0</b><small>All purchase cases</small></div></div>
+        <div class="kpi orange"><div class="icon">⏱️</div><div><span>Overdue</span><b id="kDelayed">0</b><small>Need follow-up</small></div></div>
+        <div class="kpi green"><div class="icon">✅</div><div><span>Completed</span><b id="kCompleted">0</b><small>Closed cases</small></div></div>
+        <div class="kpi blue"><div class="icon">🚚</div><div><span>Incoming</span><b id="kIncoming">0</b><small>Waiting delivery</small></div></div>
+        <div class="kpi dark"><div class="icon">📦</div><div><span>Low Stock</span><b id="kLow">0</b><small>Below min/reorder</small></div></div>
       </div>
 
-      <div class="section-title compact">
-        <span>02</span>
-        <div>
-          <h2>Purchase Follow-up</h2>
-          <p>Where each case is currently stopped.</p>
-        </div>
-      </div>
-
-      <div class="grid cols-2">
+      <div class="grid dashboard-grid">
         <div class="panel">
-          <div class="panel-title">
-            <div><h3>Purchase Status by Stage</h3><p>Number of cases in each stage.</p></div>
-            <span class="tag">Live</span>
+          <div class="panel-head">
+            <h3>Purchase Cases by Status</h3>
+            <button onclick="showPage('cases')">View all ›</button>
           </div>
-          <div id="statusBars" class="status-chart"></div>
-        </div>
-
-        <div class="panel">
-          <div class="panel-title">
-            <div><h3>Needs Attention</h3><p>Open, delayed, or high priority cases.</p></div>
-            <span class="tag orange">Action</span>
+          <div class="donut-section">
+            <div class="donut" id="donut">
+              <div><b id="donutTotal">0</b><span>Total</span></div>
+            </div>
+            <div class="legend" id="legend"></div>
           </div>
-          <div id="attention" class="stack"></div>
-        </div>
-      </div>
-
-      <div class="section-title compact">
-        <span>03</span>
-        <div>
-          <h2>Inventory Control</h2>
-          <p>Stock alerts and latest purchase updates.</p>
-        </div>
-      </div>
-
-      <div class="grid cols-2">
-        <div class="panel">
-          <div class="panel-title">
-            <div><h3>Latest Timeline Updates</h3><p>Manual comments added to purchase cases.</p></div>
-            <span class="tag">Timeline</span>
-          </div>
-          <div id="latestUpdates" class="timeline-preview"></div>
         </div>
 
         <div class="panel">
-          <div class="panel-title">
-            <div><h3>Stock Alerts</h3><p>Items below minimum or reorder point.</p></div>
-            <span class="tag red">Risk</span>
+          <div class="panel-head">
+            <h3>Overdue / Priority Cases</h3>
+            <button onclick="showPage('cases')">View all ›</button>
           </div>
-          <div id="stockAlerts" class="stack"></div>
+          <div id="priorityCases" class="list"></div>
+        </div>
+
+        <div class="panel wide-right">
+          <div class="panel-head">
+            <h3>Low Stock Alerts</h3>
+            <button onclick="showPage('items')">View all ›</button>
+          </div>
+          <table>
+            <thead><tr><th>Item</th><th>Current</th><th>Min.</th><th>Status</th></tr></thead>
+            <tbody id="lowStockTable"></tbody>
+          </table>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Recent Purchase Cases</h3>
+            <button onclick="showPage('cases')">View all ›</button>
+          </div>
+          <div id="recentCases" class="list"></div>
+        </div>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h3>Recent GRN / SRN</h3>
+            <button onclick="showPage('inventory')">View all ›</button>
+          </div>
+          <div id="recentMoves" class="list"></div>
+        </div>
+
+        <div class="panel wide-right">
+          <div class="panel-head">
+            <h3>Today's Actions</h3>
+            <button onclick="showPage('cases')">View all ›</button>
+          </div>
+          <div id="todayActions" class="task-list"></div>
+        </div>
+      </div>
+
+      <div class="quick-actions panel">
+        <h3>Quick Actions</h3>
+        <div class="quick-row">
+          <button class="quick red" onclick="openCase()">＋<span>New Purchase Case</span></button>
+          <button class="quick" onclick="openMove('GRN')">🚚<span>Create GRN</span></button>
+          <button class="quick" onclick="openMove('SRN')">↔<span>Create SRN</span></button>
+          <button class="quick" onclick="openItem()">📦<span>Item Master</span></button>
+          <button class="quick" onclick="showPage('reports')">📈<span>Stock Report</span></button>
         </div>
       </div>
     </section>
 
-    <section id="orders" class="page">
-      <div class="section-title">
-        <span>01</span>
-        <div><h2>Purchase Cases</h2><p>Simple cards for every PR. Open any case to update details, timeline, and documents.</p></div>
+    <section id="cases" class="page">
+      <div class="page-head">
+        <div><h2>Purchase Cases</h2><p>Open each card to update details, timeline, comments and documents.</p></div>
+        <button class="btn primary" onclick="openCase()">+ New Purchase Case</button>
       </div>
-
       <div class="toolbar">
-        <input id="orderSearch" placeholder="Search PR, PO, item, supplier, next action..." oninput="render()" />
+        <input id="caseSearch" oninput="render()" placeholder="Search PR, item, supplier, status..."/>
         <select id="statusFilter" onchange="render()"><option value="">All Status</option></select>
       </div>
-      <div id="orderCards" class="order-grid"></div>
+      <div id="caseCards" class="case-grid"></div>
     </section>
 
-    <section id="items" class="page">
-      <div class="section-title">
-        <span>01</span>
-        <div><h2>Item Master</h2><p>Item code, description, threshold and current balance.</p></div>
+    <section id="inventory" class="page">
+      <div class="page-head">
+        <div><h2>Inventory Movements</h2><p>GRN/SRN increases stock. Issue Note decreases stock.</p></div>
+        <button class="btn primary" onclick="openMove()">+ Add Movement</button>
       </div>
-
-      <div class="toolbar">
-        <button class="btn primary" onclick="openItem()">+ New Item</button>
-        <input id="itemSearch" placeholder="Search item code or description..." oninput="render()" />
-      </div>
-
-      <div class="panel table-panel">
-        <table>
-          <thead><tr><th>Item Code</th><th>Description</th><th>Category</th><th>Unit</th><th>Stock</th><th>Min</th><th>Status</th><th></th></tr></thead>
-          <tbody id="itemsTable"></tbody>
-        </table>
-      </div>
-    </section>
-
-    <section id="stock" class="page">
-      <div class="section-title">
-        <span>01</span>
-        <div><h2>Stock Movement</h2><p>GRN/SRN increases balance. Issue Note decreases balance.</p></div>
-      </div>
-
-      <div class="toolbar">
-        <button class="btn primary" onclick="openMove()">+ Add GRN/SRN or Issue Note</button>
-      </div>
-
       <div class="panel table-panel">
         <table>
           <thead><tr><th>Date</th><th>Item</th><th>Type</th><th>Reference</th><th>Qty</th><th>Balance</th><th>Comment</th></tr></thead>
@@ -169,30 +167,41 @@
       </div>
     </section>
 
-    <section id="reports" class="page">
-      <div class="section-title">
-        <span>01</span>
-        <div><h2>Reports</h2><p>Generate PDF report or export case data.</p></div>
+    <section id="items" class="page">
+      <div class="page-head">
+        <div><h2>Item Master</h2><p>Manage material codes, stock, minimum level and reorder point.</p></div>
+        <button class="btn primary" onclick="openItem()">+ New Item</button>
       </div>
-
       <div class="toolbar">
-        <button class="btn primary" onclick="window.print()">Generate PDF</button>
-        <button class="btn light" onclick="exportCSV()">Export CSV</button>
+        <input id="itemSearch" oninput="render()" placeholder="Search code, description, category..."/>
+      </div>
+      <div class="panel table-panel">
+        <table>
+          <thead><tr><th>Code</th><th>Description</th><th>Category</th><th>Unit</th><th>Stock</th><th>Min</th><th>Reorder</th><th>Status</th><th></th></tr></thead>
+          <tbody id="itemsTable"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="reports" class="page">
+      <div class="page-head">
+        <div><h2>Reports</h2><p>Generate PDF and export CSV.</p></div>
+        <div>
+          <button class="btn primary" onclick="window.print()">Generate PDF</button>
+          <button class="btn ghost" onclick="exportCSV()">Export CSV</button>
+        </div>
       </div>
 
       <div class="panel report">
         <div class="report-head">
-          <img src="assets/solb-logo.svg" alt="SOLB Logo">
-          <div>
-            <h2>Purchase & Inventory Status Report</h2>
-            <p id="reportDate"></p>
-          </div>
+          <img src="assets/solb-logo.png" alt="SOLB STEEL Logo"/>
+          <div><h2>Purchase & Inventory Status Report</h2><p id="reportDate"></p></div>
         </div>
-        <div class="kpi-grid small">
-          <div class="kpi blue"><i>🧾</i><div><span>Total</span><b id="rTotal">0</b></div></div>
-          <div class="kpi teal"><i>🔄</i><div><span>Open</span><b id="rOpen">0</b></div></div>
-          <div class="kpi orange"><i>⏱️</i><div><span>Delayed</span><b id="rDelayed">0</b></div></div>
-          <div class="kpi red"><i>🚨</i><div><span>Low Stock</span><b id="rLow">0</b></div></div>
+        <div class="kpi-row report-kpis">
+          <div class="kpi red"><div class="icon">📋</div><div><span>Total</span><b id="rTotal">0</b></div></div>
+          <div class="kpi orange"><div class="icon">⏱️</div><div><span>Overdue</span><b id="rDelayed">0</b></div></div>
+          <div class="kpi green"><div class="icon">✅</div><div><span>Completed</span><b id="rCompleted">0</b></div></div>
+          <div class="kpi dark"><div class="icon">📦</div><div><span>Low Stock</span><b id="rLow">0</b></div></div>
         </div>
         <h3>Open Cases</h3>
         <table><thead><tr><th>PR</th><th>Item</th><th>Status</th><th>Progress</th><th>Next Action</th></tr></thead><tbody id="reportCases"></tbody></table>
@@ -202,17 +211,15 @@
     </section>
 
     <section id="backup" class="page">
-      <div class="section-title">
-        <span>01</span>
-        <div><h2>Backup & Restore</h2><p>Data is saved in the browser. Export backup regularly.</p></div>
+      <div class="page-head">
+        <div><h2>Backup & Restore</h2><p>Current version stores data locally in your browser.</p></div>
       </div>
-
-      <div class="panel backup-panel">
+      <div class="panel">
         <h3>Data Backup</h3>
-        <p>This GitHub Pages version stores data locally in your browser. Cloud database and real file upload can be added later.</p>
+        <p class="muted">Use backup regularly. Cloud login and permanent file uploads can be added in next version.</p>
         <div class="toolbar">
           <button class="btn primary" onclick="downloadBackup()">Export Backup JSON</button>
-          <label class="btn light">Import Backup JSON <input type="file" accept=".json" hidden onchange="importBackup(event)" /></label>
+          <label class="btn ghost">Import Backup JSON <input type="file" accept=".json" hidden onchange="importBackup(event)"/></label>
           <button class="btn danger" onclick="resetData()">Reset Demo Data</button>
         </div>
       </div>
@@ -220,75 +227,69 @@
   </main>
 </div>
 
-<div class="modal" id="orderModal">
-  <div class="modal-box wide">
+<div class="modal" id="caseModal">
+  <div class="modal-card wide">
     <div class="modal-head">
-      <div>
-        <h3 id="orderTitle">Purchase Case</h3>
-        <p>Update the case manually. Keep the workflow simple.</p>
-      </div>
+      <div><h3 id="caseModalTitle">Purchase Case</h3><p>Update details, timeline, comments and document references.</p></div>
       <button onclick="closeModal()">✕</button>
     </div>
-
     <div class="tabs">
-      <button class="tab active" onclick="tab('details',this)">① Details</button>
-      <button class="tab" onclick="tab('timeline',this)">② Timeline & Comments</button>
-      <button class="tab" onclick="tab('docs',this)">③ Documents</button>
+      <button class="tab active" onclick="switchTab('caseDetails', this)">Details</button>
+      <button class="tab" onclick="switchTab('caseTimeline', this)">Timeline & Comments</button>
+      <button class="tab" onclick="switchTab('caseDocs', this)">Documents</button>
     </div>
 
-    <div id="details" class="tabpage show">
+    <div id="caseDetails" class="tabpage show">
       <div class="form-section">
         <h4>Basic Information</h4>
         <div class="form">
-          <input type="hidden" id="oId">
-          <label>PR No.<input id="oPr"></label>
-          <label>PO No.<input id="oPo"></label>
-          <label>Item<select id="oItem"></select></label>
-          <label>Type<select id="oType"><option>Spare Parts</option><option>Raw Materials</option><option>Service</option><option>Consumables</option><option>CAPEX</option></select></label>
-          <label>Status<select id="oStatus"></select></label>
-          <label>Priority<select id="oPriority"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></label>
+          <input type="hidden" id="cId"/>
+          <label>PR No.<input id="cPr"/></label>
+          <label>PO No.<input id="cPo"/></label>
+          <label>Item<select id="cItem"></select></label>
+          <label>Type<select id="cType"><option>Spare Parts</option><option>Raw Materials</option><option>Service</option><option>Consumables</option><option>CAPEX</option></select></label>
+          <label>Status<select id="cStatus"></select></label>
+          <label>Priority<select id="cPriority"><option>Low</option><option>Medium</option><option>High</option><option>Critical</option></select></label>
         </div>
       </div>
-
       <div class="form-section">
-        <h4>Responsibility & Follow-up</h4>
+        <h4>Follow-up</h4>
         <div class="form">
-          <label>Supplier<input id="oSupplier"></label>
-          <label>Owner<input id="oOwner" value="Mohammad"></label>
-          <label>Quantity<input id="oQty" type="number"></label>
-          <label>Due Date<input id="oDue" type="date"></label>
-          <label class="wide-field">Next Action<input id="oNext" placeholder="Example: Procurement to issue PO"></label>
-          <label class="wide-field">Description<textarea id="oDesc"></textarea></label>
+          <label>Supplier<input id="cSupplier"/></label>
+          <label>Owner<input id="cOwner" value="Mohammad"/></label>
+          <label>Quantity<input id="cQty" type="number"/></label>
+          <label>Due Date<input id="cDue" type="date"/></label>
+          <label class="wide-field">Next Action<input id="cNext" placeholder="Example: Procurement to issue PO"/></label>
+          <label class="wide-field">Description<textarea id="cDesc"></textarea></label>
         </div>
       </div>
-
-      <div class="right"><button class="btn primary" onclick="saveOrder()">Save Case</button></div>
+      <div class="right"><button class="btn primary" onclick="saveCase()">Save Case</button></div>
     </div>
 
-    <div id="timeline" class="tabpage">
+    <div id="caseTimeline" class="tabpage">
       <div class="form-section">
-        <h4>Add Manual Update</h4>
+        <h4>Add Update</h4>
         <div class="form compact">
-          <label>Date<input id="tDate" type="datetime-local"></label>
+          <label>Date<input id="tDate" type="datetime-local"/></label>
           <label>Update<select id="tType"></select></label>
-          <label>Person<input id="tPerson" value="Mohammad"></label>
-          <label class="wide-field">Comment<input id="tComment" placeholder="Write update, issue, decision, or next action"></label>
+          <label>Person<input id="tPerson" value="Mohammad"/></label>
+          <label class="wide-field">Comment<input id="tComment"/></label>
         </div>
-        <button class="btn light" onclick="addTimeline()">+ Add Update</button>
+        <button class="btn ghost" onclick="addTimeline()">+ Add Timeline Update</button>
       </div>
       <div id="timelineList" class="timeline"></div>
     </div>
 
-    <div id="docs" class="tabpage">
+    <div id="caseDocs" class="tabpage">
       <div class="form-section">
         <h4>Add Document Reference</h4>
         <div class="form compact">
           <label>Document Type<select id="dType"><option>PR</option><option>Offer</option><option>VES</option><option>Signed VES</option><option>PO</option><option>GRN/SRN</option><option>Issue Note</option><option>Photo</option><option>Other</option></select></label>
-          <label>File<input id="dFile" type="file"></label>
-          <label class="wide-field">Comment<input id="dComment"></label>
+          <label>File<input id="dFile" type="file"/></label>
+          <label class="wide-field">Comment<input id="dComment"/></label>
         </div>
-        <button class="btn light" onclick="addDoc()">+ Add Document Reference</button>
-        <p class="note">This static version stores file names only. Permanent uploads require cloud storage in the next version.</p>
+        <button class="btn ghost" onclick="addDoc()">+ Add Document</button>
+        <p class="muted">Static GitHub Pages stores file names only. Permanent upload requires cloud storage later.</p>
       </div>
       <div id="docsList" class="doc-grid"></div>
     </div>
@@ -296,18 +297,18 @@
 </div>
 
 <div class="modal" id="itemModal">
-  <div class="modal-box">
-    <div class="modal-head"><div><h3>Item Master</h3><p>Add or edit item balance and threshold.</p></div><button onclick="closeModal()">✕</button></div>
+  <div class="modal-card">
+    <div class="modal-head"><div><h3>Item Master</h3><p>Add or edit stock item.</p></div><button onclick="closeModal()">✕</button></div>
     <div class="form-section">
       <div class="form">
-        <input type="hidden" id="iId">
-        <label>Item Code<input id="iCode"></label>
-        <label>Category<input id="iCat"></label>
-        <label class="wide-field">Description<input id="iDesc"></label>
-        <label>Unit<input id="iUnit" value="pcs"></label>
-        <label>Current Stock<input id="iStock" type="number"></label>
-        <label>Minimum Stock<input id="iMin" type="number"></label>
-        <label>Reorder Point<input id="iReorder" type="number"></label>
+        <input type="hidden" id="iId"/>
+        <label>Item Code<input id="iCode"/></label>
+        <label>Category<input id="iCat"/></label>
+        <label class="wide-field">Description<input id="iDesc"/></label>
+        <label>Unit<input id="iUnit" value="pcs"/></label>
+        <label>Current Stock<input id="iStock" type="number"/></label>
+        <label>Minimum Stock<input id="iMin" type="number"/></label>
+        <label>Reorder Point<input id="iReorder" type="number"/></label>
       </div>
     </div>
     <div class="right"><button class="btn primary" onclick="saveItem()">Save Item</button></div>
@@ -315,16 +316,16 @@
 </div>
 
 <div class="modal" id="moveModal">
-  <div class="modal-box">
-    <div class="modal-head"><div><h3>Stock Movement</h3><p>Register receiving or consumption.</p></div><button onclick="closeModal()">✕</button></div>
+  <div class="modal-card">
+    <div class="modal-head"><div><h3>Stock Movement</h3><p>Register GRN, SRN or Issue Note.</p></div><button onclick="closeModal()">✕</button></div>
     <div class="form-section">
       <div class="form">
-        <label>Date<input id="mDate" type="datetime-local"></label>
+        <label>Date<input id="mDate" type="datetime-local"/></label>
         <label>Item<select id="mItem"></select></label>
         <label>Type<select id="mType"><option>GRN</option><option>SRN</option><option>Issue Note</option><option>Manual Adjustment</option></select></label>
-        <label>Reference<input id="mRef"></label>
-        <label>Qty<input id="mQty" type="number"></label>
-        <label class="wide-field">Comment<input id="mComment"></label>
+        <label>Reference<input id="mRef"/></label>
+        <label>Qty<input id="mQty" type="number"/></label>
+        <label class="wide-field">Comment<input id="mComment"/></label>
       </div>
     </div>
     <div class="right"><button class="btn primary" onclick="saveMove()">Save Movement</button></div>

@@ -1,19 +1,12 @@
-# SOMS Solb Theme V3
+# SOMS - SOLB STEEL Theme
 
-A simplified and clearer Procurement & Inventory module with:
-- SOLB-style header and logo placeholder
-- Sectioned dashboard
-- Better visual hierarchy
-- Purchase case cards
-- Simple timeline/comments
-- Document references
-- Item Master
-- Stock movement
-- Reports and backup
+Updated SOMS Procurement & Inventory app using the supplied SOLB STEEL logo and matching red / gray / black theme.
 
-## Deploy to GitHub Pages
-Upload all files to the root of your repository:
+## Upload to GitHub Pages
+Upload all files to your repository root:
 - index.html
 - css/style.css
 - js/app.js
-- assets/solb-logo.svg
+- assets/solb-logo.png
+
+GitHub Pages will update automatically after commit.
