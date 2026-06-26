@@ -178,3 +178,235 @@ label{font-size:12px;font-weight:850;color:#4b5563}
   #reports{display:block!important}
   .panel,.kpi{box-shadow:none}
 }
+
+
+/* ===== V4.1 FIX: Dashboard chart overlap and responsive layout ===== */
+.dashboard-grid{
+  grid-template-columns: minmax(0, 1.15fr) minmax(0, .95fr) minmax(0, 1.15fr);
+  align-items: stretch;
+}
+
+.panel{
+  overflow: hidden;
+}
+
+.donut-section{
+  display: grid;
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+  gap: 18px;
+  align-items: center;
+  width: 100%;
+}
+
+.donut{
+  width: 180px;
+  height: 180px;
+  max-width: 100%;
+  justify-self: center;
+}
+
+.donut:after{
+  width: 94px;
+  height: 94px;
+}
+
+.legend{
+  min-width: 0;
+  overflow: hidden;
+}
+
+.legend-row{
+  grid-template-columns: 12px minmax(0, 1fr) auto;
+  column-gap: 8px;
+  font-size: 12px;
+}
+
+.legend-row span:nth-child(2){
+  min-width: 0;
+  overflow-wrap: anywhere;
+  line-height: 1.25;
+}
+
+@media(max-width:1350px){
+  .dashboard-grid{
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .wide-right{
+    grid-row: auto;
+  }
+}
+
+@media(max-width:980px){
+  .dashboard-grid{
+    grid-template-columns: 1fr;
+  }
+  .donut-section{
+    grid-template-columns: 1fr;
+  }
+  .donut{
+    width: 170px;
+    height: 170px;
+  }
+  .legend{
+    width: 100%;
+  }
+}
+
+@media(max-width:520px){
+  .kpi-row{
+    grid-template-columns: 1fr;
+  }
+  .donut{
+    width: 150px;
+    height: 150px;
+  }
+  .donut:after{
+    width: 80px;
+    height: 80px;
+  }
+}
+
+
+/* ===== V4.2 PRINT FIX: PDF report page breaks ===== */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+
+  html, body {
+    background: #ffffff !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  .sidebar,
+  .topbar,
+  .page-head,
+  .toolbar,
+  .modal,
+  .quick-actions,
+  .btn {
+    display: none !important;
+  }
+
+  .app {
+    display: block !important;
+    min-height: auto !important;
+  }
+
+  .main {
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  .page {
+    display: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+
+  #reports {
+    display: block !important;
+    width: 100% !important;
+  }
+
+  #reports .panel.report {
+    display: block !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+  }
+
+  .report-head {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+    margin-bottom: 10mm !important;
+  }
+
+  .report-head img {
+    max-width: 140px !important;
+    height: auto !important;
+  }
+
+  .report-kpis {
+    display: grid !important;
+    grid-template-columns: repeat(4, 1fr) !important;
+    gap: 8mm !important;
+    margin-bottom: 8mm !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  .kpi {
+    box-shadow: none !important;
+    border: 1px solid #d9d9d9 !important;
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  #reports h3 {
+    margin-top: 8mm !important;
+    margin-bottom: 4mm !important;
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+    page-break-inside: auto !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tfoot {
+    display: table-footer-group !important;
+  }
+
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  th, td {
+    border: 1px solid #d9d9d9 !important;
+    padding: 6px 8px !important;
+    font-size: 10.5px !important;
+    line-height: 1.25 !important;
+    vertical-align: top !important;
+  }
+
+  th {
+    background: #f1f3f5 !important;
+    color: #111827 !important;
+  }
+
+  .pill {
+    border: 1px solid #ccc !important;
+    color: #111827 !important;
+    background: #f5f5f5 !important;
+  }
+
+  /* Force major report sections not to start half-cut */
+  #reportCases,
+  #reportStock {
+    page-break-inside: auto !important;
+  }
+
+  #reports table + h3 {
+    page-break-before: auto !important;
+  }
+}
