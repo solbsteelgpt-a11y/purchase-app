@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Purchase Cycle & Inventory Control Dashboard</title>
+<style>
+:root{
+  --bg:#f5f7fb; --card:#ffffff; --ink:#172033; --muted:#6b7280;
+  --primary:#0f766e; --primary2:#115e59; --accent:#f59e0b;
+  --danger:#dc2626; --warn:#d97706; --ok:#16a34a; --blue:#2563eb;
+  --line:#e5e7eb; --shadow:0 12px 30px rgba(15,23,42,.08);
+  --radius:18px;
+}
+*{box-sizing:border-box}
+body{margin:0;font-family:Inter,Segoe UI,Arial,sans-serif;background:var(--bg);color:var(--ink)}
+.app{display:grid;grid-template-columns:270px 1fr;min-height:100vh}
+.sidebar{background:#0b1220;color:#e5e7eb;padding:22px;position:sticky;top:0;height:100vh}
+.logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.mark{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--primary),#22c55e);display:grid;place-items:center;font-weight:900}
+.logo h1{font-size:17px;margin:0;line-height:1.2}.logo span{font-size:12px;color:#9ca3af}
+.nav button{width:100%;text-align:left;background:transparent;color:#cbd5e1;border:0;padding:13px 12px;border-radius:12px;margin:4px 0;cursor:pointer;font-size:14px}
+.nav button.active,.nav button:hover{background:#162033;color:#fff}
+.main{padding:24px 28px}
+.topbar{display:flex;justify-content:space-between;gap:16px;align-items:center;margin-bottom:18px}
+h2{margin:0;font-size:25px}.subtitle{color:var(--muted);font-size:13px;margin-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+button,.btn{border:0;border-radius:12px;padding:10px 13px;cursor:pointer;font-weight:650}
+.primary{background:var(--primary);color:white}.secondary{background:#e8eef7;color:#172033}.danger{background:#fee2e2;color:#991b1b}.ghost{background:#fff;border:1px solid var(--line)}
+.grid{display:grid;gap:16px}.kpis{grid-template-columns:repeat(4,minmax(160px,1fr))}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:17px}
+.kpi .label{color:var(--muted);font-size:12px}.kpi .value{font-size:30px;font-weight:850;margin-top:6px}.kpi .hint{font-size:12px;margin-top:4px;color:var(--muted)}
+.two{grid-template-columns:1.4fr .9fr}.three{grid-template-columns:repeat(3,1fr)}
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:14px;overflow:hidden}
+th,td{border-bottom:1px solid var(--line);padding:11px;text-align:left;font-size:13px;vertical-align:top}
+th{background:#f8fafc;color:#475569;font-size:12px;text-transform:uppercase;letter-spacing:.04em}
+tr:hover td{background:#fbfdff}
+.badge{padding:5px 9px;border-radius:999px;font-size:12px;font-weight:750;display:inline-block}
+.b-New{background:#e0f2fe;color:#075985}.b-WaitingProcurement{background:#fef3c7;color:#92400e}
+.b-WaitingQuotations{background:#ede9fe;color:#5b21b6}.b-WaitingVES{background:#ffedd5;color:#9a3412}
+.b-WaitingPO{background:#dbeafe;color:#1e40af}.b-WaitingDelivery{background:#fce7f3;color:#9d174d}
+.b-WaitingGRN{background:#ccfbf1;color:#115e59}.b-Completed{background:#dcfce7;color:#166534}.b-Delayed{background:#fee2e2;color:#991b1b}
+.progress{height:9px;background:#e5e7eb;border-radius:999px;overflow:hidden}.bar{height:100%;background:linear-gradient(90deg,var(--primary),#22c55e)}
+.form{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.form label{font-size:12px;color:#475569;font-weight:750}.form input,.form select,.form textarea{width:100%;margin-top:5px;border:1px solid var(--line);border-radius:11px;padding:10px;background:#fff}
+.form textarea{min-height:76px;resize:vertical}.span2{grid-column:span 2}.span4{grid-column:span 4}
+.hide{display:none}
+.timeline{border-left:3px solid #d1d5db;margin-left:12px;padding-left:18px}
+.titem{position:relative;margin-bottom:14px}.titem:before{content:"";position:absolute;left:-27px;top:3px;width:14px;height:14px;border-radius:50%;background:var(--primary);border:3px solid #d1fae5}
+.tdate{font-size:12px;color:var(--muted)}.ttitle{font-weight:800}.tcomment{font-size:13px;color:#374151;margin-top:3px}
+.docgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.docslot{border:1px dashed #cbd5e1;border-radius:14px;padding:12px;background:#f8fafc;font-size:13px}
+.stock-safe{color:var(--ok);font-weight:800}.stock-low{color:var(--warn);font-weight:800}.stock-critical{color:var(--danger);font-weight:800}
+.chartbox{height:250px;display:flex;align-items:end;gap:12px;border-bottom:1px solid var(--line);padding-top:15px}
+.col{flex:1;min-width:30px;background:linear-gradient(180deg,#14b8a6,#0f766e);border-radius:10px 10px 0 0;position:relative}
+.col span{position:absolute;bottom:100%;left:50%;transform:translateX(-50%);font-size:11px;margin-bottom:4px}
+.col small{position:absolute;top:100%;left:50%;transform:translateX(-50%);font-size:10px;margin-top:4px;color:var(--muted);white-space:nowrap}
+.modal{position:fixed;inset:0;background:rgba(2,6,23,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:20}
+.modal.show{display:flex}.modalbox{background:#fff;border-radius:22px;max-width:1050px;width:100%;max-height:90vh;overflow:auto;padding:20px;box-shadow:0 30px 70px rgba(0,0,0,.25)}
+.detail-head{display:flex;justify-content:space-between;align-items:start;gap:10px;border-bottom:1px solid var(--line);padding-bottom:12px;margin-bottom:14px}
+.small{font-size:12px;color:var(--muted)}
+.report{background:#fff;padding:24px}
+@media(max-width:900px){.app{grid-template-columns:1fr}.sidebar{height:auto;position:relative}.kpis,.two,.three,.form{grid-template-columns:1fr}.span2,.span4{grid-column:auto}.docgrid{grid-template-columns:1fr}.topbar{flex-direction:column;align-items:flex-start}}
+@media print{.sidebar,.topbar .actions,.no-print,.nav{display:none!important}.app{display:block}.main{padding:0}.card{box-shadow:none}.page{display:block!important}.hide{display:block!important}body{background:white}}
+</style>
+</head>
+<body>
+<div class="app">
+<aside class="sidebar">
+  <div class="logo"><div class="mark">PC</div><div><h1>Purchase Control</h1><span>Spare Parts • Raw Materials • Services</span></div></div>
+  <div class="nav">
+    <button class="active" onclick="showPage('dashboard',this)">📊 Dashboard</button>
+    <button onclick="showPage('tracker',this)">🧾 Purchase Tracker</button>
+    <button onclick="showPage('items',this)">📦 Item Master</button>
+    <button onclick="showPage('stock',this)">🏭 Stock Movements</button>
+    <button onclick="showPage('reports',this)">📄 Reports</button>
+    <button onclick="showPage('settings',this)">⚙️ Data Backup</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="topbar">
+    <div><h2 id="pageTitle">Dashboard</h2><div class="subtitle">Manual purchase-cycle follow-up with timeline, comments, documents, stock and reports.</div></div>
+    <div class="actions">
+      <button class="primary" onclick="openOrderModal()">+ New Purchase Case</button>
+      <button class="secondary" onclick="openItemModal()">+ New Item</button>
+      <button class="ghost" onclick="window.print()">Print / PDF</button>
+    </div>
+  </div>
+
+  <section id="dashboard" class="page">
+    <div class="grid kpis">
+      <div class="card kpi"><div class="label">Total Cases</div><div class="value" id="kTotal">0</div><div class="hint">All purchase cases</div></div>
+      <div class="card kpi"><div class="label">Completed</div><div class="value" id="kCompleted">0</div><div class="hint">Closed cycle</div></div>
+      <div class="card kpi"><div class="label">Delayed</div><div class="value" id="kDelayed">0</div><div class="hint">Delivery date exceeded</div></div>
+      <div class="card kpi"><div class="label">Critical Stock</div><div class="value" id="kCritical">0</div><div class="hint">Below threshold</div></div>
+    </div>
+    <br/>
+    <div class="grid two">
+      <div class="card"><h3>Status Overview</h3><div class="chartbox" id="statusChart"></div></div>
+      <div class="card"><h3>Critical / Low Stock</h3><div id="criticalList"></div></div>
+    </div>
+    <br/>
+    <div class="card">
+      <h3>Last Updates</h3>
+      <table><thead><tr><th>Date</th><th>Case</th><th>Update</th><th>Comment</th></tr></thead><tbody id="lastUpdates"></tbody></table>
+    </div>
+  </section>
+
+  <section id="tracker" class="page hide">
+    <div class="card">
+      <div class="actions no-print">
+        <input id="searchOrders" oninput="renderOrders()" placeholder="Search PR, PO, item, supplier, status..." style="padding:11px;border:1px solid var(--line);border-radius:12px;min-width:300px">
+        <select id="filterStatus" onchange="renderOrders()" style="padding:11px;border:1px solid var(--line);border-radius:12px">
+          <option value="">All Status</option>
+        </select>
+      </div><br/>
+      <table><thead><tr><th>PR</th><th>Item</th><th>Type</th><th>Status</th><th>Progress</th><th>Supplier</th><th>Required Date</th><th>Last Update</th><th></th></tr></thead><tbody id="ordersTable"></tbody></table>
+    </div>
+  </section>
+
+  <section id="items" class="page hide">
+    <div class="card">
+      <table><thead><tr><th>Code</th><th>Description</th><th>Category</th><th>Unit</th><th>Current Stock</th><th>Min</th><th>Status</th><th></th></tr></thead><tbody id="itemsTable"></tbody></table>
+    </div>
+  </section>
+
+  <section id="stock" class="page hide">
+    <div class="card">
+      <h3>Stock Movements</h3>
+      <div class="actions no-print"><button class="primary" onclick="openMoveModal()">+ Add GRN/SRN or Issue Note</button></div><br/>
+      <table><thead><tr><th>Date</th><th>Item</th><th>Type</th><th>Ref.</th><th>Qty</th><th>Comment</th></tr></thead><tbody id="movesTable"></tbody></table>
+    </div>
+  </section>
+
+  <section id="reports" class="page hide">
+    <div class="card report" id="reportArea">
+      <h2>Purchase Cycle Status Report</h2>
+      <div class="small" id="reportDate"></div>
+      <hr/>
+      <div class="grid three">
+        <div><b>Total Cases</b><h2 id="rTotal">0</h2></div>
+        <div><b>Avg. Completion</b><h2 id="rProgress">0%</h2></div>
+        <div><b>Critical Stock Items</b><h2 id="rCritical">0</h2></div>
+      </div>
+      <h3>Open Purchase Cases</h3>
+      <table><thead><tr><th>PR</th><th>Item</th><th>Status</th><th>Completion</th><th>Last Update</th></tr></thead><tbody id="reportOrders"></tbody></table>
+      <h3>Stock Alerts</h3>
+      <table><thead><tr><th>Code</th><th>Description</th><th>Stock</th><th>Min</th><th>Status</th></tr></thead><tbody id="reportStock"></tbody></table>
+    </div>
+    <br/>
+    <button class="primary no-print" onclick="window.print()">Generate PDF Report</button>
+    <button class="secondary no-print" onclick="downloadCSV()">Export Orders CSV</button>
+  </section>
+
+  <section id="settings" class="page hide">
+    <div class="card">
+      <h3>Data Backup</h3>
+      <p class="small">Data is stored locally in your browser. Use export/import regularly.</p>
+      <button class="primary" onclick="exportJSON()">Export Backup JSON</button>
+      <label class="btn secondary">Import Backup JSON <input type="file" accept=".json" onchange="importJSON(event)" hidden></label>
+      <button class="danger" onclick="resetDemo()">Reset Demo Data</button>
+    </div>
+  </section>
+</main>
+</div>
+
+<div class="modal" id="orderModal"><div class="modalbox">
+  <div class="detail-head"><div><h2 id="orderModalTitle">Purchase Case</h2><div class="small">Add details, timeline, comments and document references.</div></div><button onclick="closeModal('orderModal')">✕</button></div>
+  <div class="form">
+    <input type="hidden" id="oId">
+    <div><label>PR No.<input id="oPr"></label></div>
+    <div><label>Item<select id="oItem"></select></label></div>
+    <div><label>Type<select id="oType"><option>Spare Part</option><option>Raw Material</option><option>Service</option><option>Consumable</option></select></label></div>
+    <div><label>Status<select id="oStatus"></select></label></div>
+    <div><label>Supplier<input id="oSupplier"></label></div>
+    <div><label>Qty<input id="oQty" type="number" step="0.01"></label></div>
+    <div><label>PR Date<input id="oPrDate" type="date"></label></div>
+    <div><label>Required Date<input id="oReqDate" type="date"></label></div>
+    <div><label>PO No.<input id="oPo"></label></div>
+    <div><label>Estimated Value<input id="oValue" type="number" step="0.01"></label></div>
+    <div class="span2"><label>Description<textarea id="oDesc"></textarea></label></div>
+    <div class="span4"><button class="primary" onclick="saveOrder()">Save Case</button></div>
+  </div>
+  <hr/>
+  <h3>Manual Timeline & Comments</h3>
+  <div class="form">
+    <div><label>Date<input id="tDate" type="date"></label></div>
+    <div><label>Update Type<select id="tTitle"><option>PR Created</option><option>Email Sent to Procurement</option><option>RFQ Sent to Suppliers</option><option>Supplier Responded</option><option>Quotations Received</option><option>VES Prepared</option><option>VES Accepted</option><option>VES Rejected</option><option>VES Signed</option><option>PO Issued</option><option>Material Received</option><option>GRN Created</option><option>SRN Created</option><option>Issue Note Created</option><option>Custom Update</option></select></label></div>
+    <div class="span2"><label>Comment<input id="tComment" placeholder="Write manual comment / next action / reason..."></label></div>
+    <div class="span4"><button class="secondary" onclick="addTimeline()">+ Add Timeline Update</button></div>
+  </div>
+  <div id="timelineBox" class="timeline"></div>
+  <hr/>
+  <h3>Document Slots</h3>
+  <div class="docgrid" id="docSlots"></div>
+</div></div>
+
+<div class="modal" id="itemModal"><div class="modalbox">
+  <div class="detail-head"><div><h2>Item Master</h2><div class="small">Item code, threshold and stock balance.</div></div><button onclick="closeModal('itemModal')">✕</button></div>
+  <div class="form">
+    <input type="hidden" id="iId">
+    <div><label>Item Code<input id="iCode"></label></div>
+    <div class="span2"><label>Description<input id="iDesc"></label></div>
+    <div><label>Category<input id="iCat" placeholder="Bearing, Refractory, Electrode..."></label></div>
+    <div><label>Unit<input id="iUnit" value="pcs"></label></div>
+    <div><label>Current Stock<input id="iStock" type="number" step="0.01"></label></div>
+    <div><label>Minimum Threshold<input id="iMin" type="number" step="0.01"></label></div>
+    <div><label>Maximum Stock<input id="iMax" type="number" step="0.01"></label></div>
+    <div><label>Warehouse<input id="iWh"></label></div>
+    <div class="span4"><button class="primary" onclick="saveItem()">Save Item</button></div>
+  </div>
+</div></div>
+
+<div class="modal" id="moveModal"><div class="modalbox">
+  <div class="detail-head"><div><h2>Stock Movement</h2><div class="small">GRN/SRN increases stock. Issue Note decreases stock.</div></div><button onclick="closeModal('moveModal')">✕</button></div>
+  <div class="form">
+    <div><label>Date<input id="mDate" type="date"></label></div>
+    <div><label>Item<select id="mItem"></select></label></div>
+    <div><label>Type<select id="mType"><option value="GRN">GRN - Spare Received</option><option value="SRN">SRN - Service/Material Received</option><option value="ISSUE">Issue Note - Consumption</option></select></label></div>
+    <div><label>Reference<input id="mRef"></label></div>
+    <div><label>Qty<input id="mQty" type="number" step="0.01"></label></div>
+    <div class="span2"><label>Comment<input id="mComment"></label></div>
+    <div class="span4"><button class="primary" onclick="saveMove()">Save Movement</button></div>
+  </div>
+</div></div>
+
+<script>
+const STATUSES = ["New","Waiting Procurement","Waiting Quotations","Waiting VES","Waiting PO","Waiting Delivery","Waiting GRN","Completed","Delayed"];
+const DOCS = ["PR","RFQ Email","Supplier Offers","VES Excel","Signed VES","PO","Delivery Note","Invoice","GRN/SRN","Issue Note","Photos","Certificates"];
+const STEPS = {"New":5,"Waiting Procurement":15,"Waiting Quotations":30,"Waiting VES":45,"Waiting PO":60,"Waiting Delivery":75,"Waiting GRN":90,"Completed":100,"Delayed":60};
+let data = JSON.parse(localStorage.getItem("purchaseCycleDB")||"null") || demoData();
+let currentOrderId = null;
+
+function demoData(){
+ return {
+  items:[
+   {id:uid(),code:"BRG-22220",desc:"Bearing SKF 22220",cat:"Spare Part",unit:"pcs",stock:3,min:2,max:10,wh:"SMP Store"},
+   {id:uid(),code:"LIME-001",desc:"Quick Lime",cat:"Raw Material",unit:"ton",stock:120,min:80,max:500,wh:"RM Store"},
+   {id:uid(),code:"ELEC-600",desc:"Graphite Electrode 600 mm",cat:"Consumable",unit:"pcs",stock:8,min:12,max:60,wh:"Electrode Store"}
+  ],
+  orders:[],
+  moves:[]
+ };
+}
+function seedOrders(){
+ if(data.orders.length) return;
+ data.orders=[
+  {id:uid(),pr:"PR-26001",itemId:data.items[0].id,type:"Spare Part",status:"Waiting PO",supplier:"SKF Supplier",qty:6,prDate:today(-12),reqDate:today(8),po:"",value:18000,desc:"Urgent bearing for EAF auxiliary equipment.",timeline:[{date:today(-12),title:"PR Created",comment:"PR created and sent for review."},{date:today(-10),title:"Email Sent to Procurement",comment:"Procurement requested to start RFQ."},{date:today(-5),title:"VES Signed",comment:"Technical acceptance completed."}],docs:{}},
+  {id:uid(),pr:"PR-26002",itemId:data.items[2].id,type:"Consumable",status:"Waiting Delivery",supplier:"Electrode Supplier",qty:24,prDate:today(-20),reqDate:today(5),po:"PO-8841",value:72000,desc:"Graphite electrodes stock replenishment.",timeline:[{date:today(-20),title:"PR Created",comment:"Minimum stock breached."},{date:today(-13),title:"PO Issued",comment:"PO issued to selected supplier."}],docs:{}}
+ ];
+ save();
+}
+function uid(){return Math.random().toString(36).slice(2,10)}
+function today(offset=0){let d=new Date();d.setDate(d.getDate()+offset);return d.toISOString().slice(0,10)}
+function save(){localStorage.setItem("purchaseCycleDB",JSON.stringify(data));renderAll();}
+function showPage(id,btn){document.querySelectorAll(".page").forEach(p=>p.classList.add("hide"));document.getElementById(id).classList.remove("hide");document.querySelectorAll(".nav button").forEach(b=>b.classList.remove("active"));btn.classList.add("active");document.getElementById("pageTitle").innerText=btn.innerText.replace(/[^\w\s&]/g,"").trim();renderAll();}
+function closeModal(id){document.getElementById(id).classList.remove("show")}
+function openModal(id){document.getElementById(id).classList.add("show")}
+function itemName(id){let i=data.items.find(x=>x.id===id);return i?`${i.code} - ${i.desc}`:""}
+function stockStatus(i){ if(Number(i.stock)<=Number(i.min)*0.5) return ["Critical","stock-critical"]; if(Number(i.stock)<Number(i.min)) return ["Low","stock-low"]; return ["Safe","stock-safe"]; }
+
+function initSelects(){
+ document.getElementById("oStatus").innerHTML=STATUSES.map(s=>`<option>${s}</option>`).join("");
+ document.getElementById("filterStatus").innerHTML='<option value="">All Status</option>'+STATUSES.map(s=>`<option>${s}</option>`).join("");
+ ["oItem","mItem"].forEach(id=>document.getElementById(id).innerHTML=data.items.map(i=>`<option value="${i.id}">${i.code} - ${i.desc}</option>`).join(""));
+}
+function renderAll(){seedOrders();initSelects();renderDashboard();renderOrders();renderItems();renderMoves();renderReports();}
+function renderDashboard(){
+ let total=data.orders.length, completed=data.orders.filter(o=>o.status==="Completed").length;
+ let delayed=data.orders.filter(o=>o.status==="Delayed" || (o.reqDate && new Date(o.reqDate)<new Date() && o.status!=="Completed")).length;
+ let critical=data.items.filter(i=>Number(i.stock)<Number(i.min)).length;
+ kTotal.innerText=total;kCompleted.innerText=completed;kDelayed.innerText=delayed;kCritical.innerText=critical;
+ let counts=STATUSES.map(s=>[s,data.orders.filter(o=>o.status===s).length]).filter(x=>x[1]>0);
+ let max=Math.max(1,...counts.map(x=>x[1]));
+ statusChart.innerHTML=counts.map(([s,c])=>`<div class="col" style="height:${30+c/max*190}px"><span>${c}</span><small>${s.replace("Waiting ","")}</small></div>`).join("") || "<p class='small'>No cases yet.</p>";
+ let crit=data.items.filter(i=>Number(i.stock)<Number(i.min));
+ criticalList.innerHTML=crit.length?crit.map(i=>`<p><b>${i.code}</b> ${i.desc}<br><span class="${stockStatus(i)[1]}">${stockStatus(i)[0]}: ${i.stock} ${i.unit} / Min ${i.min}</span></p>`).join(""):"<p class='stock-safe'>No critical stock items.</p>";
+ let events=[];data.orders.forEach(o=>(o.timeline||[]).forEach(t=>events.push({...t,pr:o.pr,item:itemName(o.itemId)})));
+ events.sort((a,b)=>b.date.localeCompare(a.date));
+ lastUpdates.innerHTML=events.slice(0,8).map(e=>`<tr><td>${e.date}</td><td>${e.pr}<br><small>${e.item}</small></td><td>${e.title}</td><td>${e.comment||""}</td></tr>`).join("");
+}
+function renderOrders(){
+ let q=(searchOrders?.value||"").toLowerCase(), f=filterStatus?.value||"";
+ let rows=data.orders.filter(o=>{
+  let txt=[o.pr,o.po,itemName(o.itemId),o.supplier,o.status,o.type,o.desc].join(" ").toLowerCase();
+  return (!q||txt.includes(q)) && (!f||o.status===f);
+ });
+ ordersTable.innerHTML=rows.map(o=>{
+  let p=STEPS[o.status]||0, last=(o.timeline||[]).slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
+  return `<tr><td><b>${o.pr}</b><br><small>${o.po||"No PO yet"}</small></td><td>${itemName(o.itemId)}</td><td>${o.type}</td><td><span class="badge b-${o.status.replaceAll(" ","")}">${o.status}</span></td><td><div class="progress"><div class="bar" style="width:${p}%"></div></div><small>${p}%</small></td><td>${o.supplier||""}</td><td>${o.reqDate||""}</td><td>${last?last.date+" - "+last.title:""}</td><td><button class="secondary" onclick="openOrderModal('${o.id}')">Open</button></td></tr>`;
+ }).join("");
+}
+function renderItems(){
+ itemsTable.innerHTML=data.items.map(i=>`<tr><td><b>${i.code}</b></td><td>${i.desc}</td><td>${i.cat}</td><td>${i.unit}</td><td>${i.stock}</td><td>${i.min}</td><td><span class="${stockStatus(i)[1]}">${stockStatus(i)[0]}</span></td><td><button class="secondary" onclick="openItemModal('${i.id}')">Edit</button></td></tr>`).join("");
+}
+function renderMoves(){
+ movesTable.innerHTML=data.moves.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(m=>`<tr><td>${m.date}</td><td>${itemName(m.itemId)}</td><td>${m.type}</td><td>${m.ref||""}</td><td>${m.qty}</td><td>${m.comment||""}</td></tr>`).join("");
+}
+function renderReports(){
+ reportDate.innerText="Generated: "+new Date().toLocaleString();
+ rTotal.innerText=data.orders.length;
+ let avg=data.orders.length?Math.round(data.orders.reduce((s,o)=>s+(STEPS[o.status]||0),0)/data.orders.length):0;
+ rProgress.innerText=avg+"%";
+ rCritical.innerText=data.items.filter(i=>Number(i.stock)<Number(i.min)).length;
+ reportOrders.innerHTML=data.orders.filter(o=>o.status!=="Completed").map(o=>{
+  let last=(o.timeline||[]).slice().sort((a,b)=>b.date.localeCompare(a.date))[0];
+  return `<tr><td>${o.pr}</td><td>${itemName(o.itemId)}</td><td>${o.status}</td><td>${STEPS[o.status]||0}%</td><td>${last?last.date+" - "+last.title:""}</td></tr>`;
+ }).join("");
+ reportStock.innerHTML=data.items.filter(i=>Number(i.stock)<Number(i.min)).map(i=>`<tr><td>${i.code}</td><td>${i.desc}</td><td>${i.stock}</td><td>${i.min}</td><td>${stockStatus(i)[0]}</td></tr>`).join("");
+}
+
+function openOrderModal(id=null){
+ currentOrderId=id; initSelects();
+ let o=id?data.orders.find(x=>x.id===id):{id:"",pr:"",itemId:data.items[0]?.id,type:"Spare Part",status:"New",supplier:"",qty:"",prDate:today(),reqDate:"",po:"",value:"",desc:"",timeline:[],docs:{}};
+ oId.value=o.id;oPr.value=o.pr;oItem.value=o.itemId||"";oType.value=o.type;oStatus.value=o.status;oSupplier.value=o.supplier||"";oQty.value=o.qty||"";oPrDate.value=o.prDate||today();oReqDate.value=o.reqDate||"";oPo.value=o.po||"";oValue.value=o.value||"";oDesc.value=o.desc||"";
+ tDate.value=today(); tComment.value="";
+ renderTimeline(o); renderDocs(o); openModal("orderModal");
+}
+function saveOrder(){
+ let id=oId.value||uid(); let existing=data.orders.find(x=>x.id===id);
+ let obj={id,pr:oPr.value,itemId:oItem.value,type:oType.value,status:oStatus.value,supplier:oSupplier.value,qty:Number(oQty.value||0),prDate:oPrDate.value,reqDate:oReqDate.value,po:oPo.value,value:Number(oValue.value||0),desc:oDesc.value,timeline:existing?.timeline||[],docs:existing?.docs||{}};
+ if(!existing){obj.timeline.push({date:oPrDate.value||today(),title:"PR Created",comment:"Case created."});data.orders.push(obj)} else Object.assign(existing,obj);
+ save(); currentOrderId=id; openOrderModal(id);
+}
+function renderTimeline(o){
+ timelineBox.innerHTML=(o.timeline||[]).slice().sort((a,b)=>b.date.localeCompare(a.date)).map((t,idx)=>`<div class="titem"><div class="tdate">${t.date}</div><div class="ttitle">${t.title}</div><div class="tcomment">${t.comment||""}</div><button class="danger no-print" onclick="deleteTimeline('${o.id}',${(o.timeline||[]).indexOf(t)})">Delete</button></div>`).join("") || "<p class='small'>No timeline updates yet.</p>";
+}
+function addTimeline(){
+ let o=data.orders.find(x=>x.id===currentOrderId); if(!o){alert("Save case first.");return;}
+ o.timeline=o.timeline||[]; o.timeline.push({date:tDate.value||today(),title:tTitle.value,comment:tComment.value});
+ save(); openOrderModal(o.id);
+}
+function deleteTimeline(orderId,index){let o=data.orders.find(x=>x.id===orderId);o.timeline.splice(index,1);save();openOrderModal(orderId);}
+function renderDocs(o){
+ docSlots.innerHTML=DOCS.map(d=>`<div class="docslot"><b>${d}</b><br><input onchange="saveDoc('${o.id}','${d}',this)" type="file"><div class="small">${o.docs?.[d]||"No file selected"}</div></div>`).join("");
+}
+function saveDoc(orderId,doc,input){let o=data.orders.find(x=>x.id===orderId);if(!o){alert("Save case first.");return;}o.docs=o.docs||{};o.docs[doc]=input.files[0]?.name||"";save();openOrderModal(orderId);}
+
+function openItemModal(id=null){
+ let i=id?data.items.find(x=>x.id===id):{id:"",code:"",desc:"",cat:"",unit:"pcs",stock:0,min:0,max:0,wh:""};
+ iId.value=i.id;iCode.value=i.code;iDesc.value=i.desc;iCat.value=i.cat;iUnit.value=i.unit;iStock.value=i.stock;iMin.value=i.min;iMax.value=i.max;iWh.value=i.wh||"";openModal("itemModal");
+}
+function saveItem(){
+ let id=iId.value||uid(), existing=data.items.find(x=>x.id===id);
+ let obj={id,code:iCode.value,desc:iDesc.value,cat:iCat.value,unit:iUnit.value,stock:Number(iStock.value||0),min:Number(iMin.value||0),max:Number(iMax.value||0),wh:iWh.value};
+ if(existing) Object.assign(existing,obj); else data.items.push(obj);
+ save(); closeModal("itemModal");
+}
+function openMoveModal(){initSelects();mDate.value=today();openModal("moveModal")}
+function saveMove(){
+ let qty=Number(mQty.value||0), i=data.items.find(x=>x.id===mItem.value); if(!i){alert("Select item");return;}
+ if(mType.value==="ISSUE") i.stock=Number(i.stock)-qty; else i.stock=Number(i.stock)+qty;
+ data.moves.push({id:uid(),date:mDate.value||today(),itemId:mItem.value,type:mType.value,ref:mRef.value,qty,comment:mComment.value});
+ save(); closeModal("moveModal");
+}
+function exportJSON(){
+ let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}), a=document.createElement("a");
+ a.href=URL.createObjectURL(blob); a.download="purchase_cycle_backup.json"; a.click();
+}
+function importJSON(e){
+ let file=e.target.files[0]; if(!file)return; let r=new FileReader();
+ r.onload=()=>{data=JSON.parse(r.result); save(); alert("Imported successfully.");}; r.readAsText(file);
+}
+function resetDemo(){if(confirm("Reset all data to demo?")){localStorage.removeItem("purchaseCycleDB");data=demoData();seedOrders();save();}}
+function downloadCSV(){
+ let rows=[["PR","Item","Type","Status","Progress","Supplier","PR Date","Required Date","PO","Value","Description"]];
+ data.orders.forEach(o=>rows.push([o.pr,itemName(o.itemId),o.type,o.status,STEPS[o.status]||0,o.supplier,o.prDate,o.reqDate,o.po,o.value,o.desc]));
+ let csv=rows.map(r=>r.map(v=>`"${String(v??"").replaceAll('"','""')}"`).join(",")).join("\n");
+ let blob=new Blob([csv],{type:"text/csv"}), a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="purchase_cases.csv";a.click();
+}
+renderAll();
+</script>
+</body>
+</html>
